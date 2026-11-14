@@ -2,6 +2,7 @@
 
     python tools/nico/multiverso/montar.py                      monta las hojas de todos
     python tools/nico/multiverso/montar.py traer <clave> <dir>  copia a fuentes/ lo bajado de PixelLab
+    python tools/nico/multiverso/montar.py vista <clave> <dir>  hoja de contacto para revisarlo, sin tocar el juego
 
 PixelLab (https://www.pixellab.ai, API v2) dibuja cada personaje mirando al sur y lo
 rota a 8 direcciones (create-character-v3), y anima su forma de andar (animación `v3`,
@@ -344,9 +345,9 @@ class Marco:
 
 
 class Montaje:
-    def __init__(self, clave, sub='', pies=None):
+    def __init__(self, clave, sub='', pies=None, cfg=None):
         self.clave = clave
-        self.cfg = PJ[clave]
+        self.cfg = cfg or PJ[clave]
         self.flota = self.cfg['mov'] == 'flota'
         self.carpeta = carpeta = os.path.join(FUENTES, clave, sub)
         self.rot = {}
@@ -456,8 +457,13 @@ class Montaje:
         else:
             A['Faint'] = (mv, [[self.poner(mv, R[d]), self.poner(mv, respirar(R[d]), 0, 1), self.tumbado(mv, d), self.tumbado(mv, d)] for d in DIRS],
                           [8, 12, 4, 10])
-        # Las dibujadas aparte sustituyen a las de código (con su marco: con margen las que se desplazan).
-        for anim, dur in self.cfg.get('propias', {}).items():
+        # Las dibujadas aparte sustituyen a las de código (con su marco: con margen las que se desplazan). Las de
+        # animar3d.py + pixelar.py --anim (Attack-<dirección>.png y Shoot-<dirección>.png) se usan solas si están.
+        propias = dict(self.cfg.get('propias', {}))
+        for anim, dur in (('Attack', [2, 2, 3, 3, 2, 2, 2]), ('Shoot', [2, 2, 3, 2, 2])):
+            if anim not in propias and os.path.exists(os.path.join(self.carpeta, anim + '-south.png')):
+                propias[anim] = dur
+        for anim, dur in propias.items():
             filas = self.propia(anim)
             assert all(len(f) == len(dur) for f in filas), (self.clave, anim, [len(f) for f in filas], dur)
             mp = Marco(self, LADO if anim in ('Attack', 'Shoot', 'Hurt', 'Faint') else 0, max(f.width for fs in filas for f in fs))
@@ -536,9 +542,104 @@ def traer(clave, origen):
         print('  andar-%s: %d fotogramas de %dx%d' % (m.group(1), tira.width // tira.height, tira.height, tira.height))
 
 
+def vista(clave, salida, como=None):
+    """Hoja de contacto de un personaje para revisarlo SIN tocar el juego (ni assets/ ni META): sus 8 direcciones
+    quieto (y en variocolor), andar al sur, este y norte, Attack, Shoot, Hurt y Faint, y la escala del juego al lado de
+    Charmander (4) y Kratos (10012). Escribe <salida>/hoja.png (×3) y <salida>/andar.gif (andando hacia las 8
+    direcciones, ×4). Usa sus fuentes de fuentes/<clave>/ y su entrada de PJ."""
+    from PIL import ImageDraw
+    os.makedirs(salida, exist_ok=True)
+    m = Montaje(clave, cfg=PJ[como] if como else None)
+    A = m.anims()
+    X = 3
+    fondo_c = (54, 92, 62, 255)
+    reco = (PJ[como] if como else PJ[clave]).get('vario')
+    # Un variocolor corregido mientras se revisa (lote4/trabajo/<clave>/vario.json, las reglas de vario_reglas) gana.
+    alt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lote4', 'trabajo', clave, 'vario.json')
+    if os.path.exists(alt) and 'vario_reglas' in globals():
+        reco = vario_reglas(json.load(open(alt, encoding='utf-8')))
+
+    def recolor(img):
+        if not reco:
+            return img
+        img = img.copy()
+        px = img.load()
+        cache = {}
+        for y in range(img.height):
+            for x in range(img.width):
+                c = px[x, y]
+                if c[3]:
+                    k = c[:3]
+                    if k not in cache:
+                        cache[k] = reco(k)
+                    px[x, y] = cache[k] + (c[3],)
+        return img
+
+    def escala(img, k=X):
+        return img.resize((img.width * k, img.height * k), Image.NEAREST)
+
+    filas = []   # (título, [imágenes])
+    filas.append(('Quieto: S, SE, E, NE, N, NO, O, SO', [A['Idle'][1][i][0] for i in range(8)]))
+    filas.append(('Variocolor', [recolor(A['Idle'][1][i][0]) for i in range(8)]))
+    for d, i in (('S', 0), ('E', 2), ('N', 4)):
+        filas.append(('Andar ' + d, A['Walk'][1][i]))
+    for anim in ('Attack', 'Shoot'):
+        filas.append((anim + ' S', A[anim][1][0]))
+        filas.append((anim + ' E', A[anim][1][2]))
+    filas.append(('Hurt E · Faint S', A['Hurt'][1][2] + A['Faint'][1][0]))
+    # A escala, junto a Charmander y Kratos (su Idle al sur, primer fotograma de sus hojas reales).
+    comp = []
+    for dex, an in ((4, 'Idle'), (10012, 'Idle')):
+        p = os.path.join(RAIZ, 'assets', 'pokemon', str(dex), an + '.png')
+        if os.path.exists(p):
+            h = Image.open(p).convert('RGBA')
+            # El tamaño del fotograma, de su geometría (sprites-meta.js de upstream o la META de multiverso.js).
+            src = open(os.path.join(RAIZ, 'js', 'data', 'sprites-meta.js' if dex < 10001 else 'multiverso.js'), encoding='utf-8').read()
+            mm = re.search(r'^\s*%d: (\{.*\}),?\s*$' % dex, src, re.M)
+            fw, fh = h.width, h.height // 8
+            if mm:
+                geo = json.loads(mm.group(1))['a'][an]
+                fw, fh = geo['w'], geo['h']
+            comp.append(h.crop((0, 0, fw, fh)))
+    comp.insert(1, A['Idle'][1][0][0])
+    filas.append(('Escala: Charmander, el personaje, Kratos', comp))
+
+    ancho = max(sum(escala(i).width + 6 for i in imgs) for _, imgs in filas) + 160
+    alto = sum(max(escala(i).height for i in imgs) + 10 for _, imgs in filas) + 10
+    hoja = Image.new('RGBA', (ancho, alto), fondo_c)
+    dib = ImageDraw.Draw(hoja)
+    y = 6
+    for titulo, imgs in filas:
+        dib.text((6, y + 4), titulo, fill=(240, 246, 247, 255))
+        x = 156
+        alto_f = max(escala(i).height for i in imgs)
+        for i in imgs:
+            e = escala(i)
+            hoja.alpha_composite(e, (x, y + alto_f - e.height))
+            x += e.width + 6
+        y += alto_f + 10
+    hoja.save(os.path.join(salida, 'hoja.png'), optimize=True)
+    # Andar hacia las 8 direcciones, en bucle.
+    mw, filas_w, dur = A['Walk']
+    K = 4
+    cuadros = []
+    for f in range(len(dur)):
+        c = Image.new('RGBA', (mw.w * K * 8 + 7 * 4, mw.h * K), fondo_c)
+        for d in range(8):
+            c.alpha_composite(escala(filas_w[d][f], K), (d * (mw.w * K + 4), 0))
+        cuadros.append(c.convert('RGB').convert('P', palette=Image.ADAPTIVE))
+    cuadros[0].save(os.path.join(salida, 'andar.gif'), save_all=True, append_images=cuadros[1:],
+                    duration=[round(d * 1000 / 60) for d in dur], loop=0)
+    print('vista de %s: %s y %s' % (clave, os.path.join(salida, 'hoja.png'), os.path.join(salida, 'andar.gif')))
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'traer':
         traer(sys.argv[2], sys.argv[3])
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == 'vista':
+        # vista <clave> <salida> [<clave de PJ cuya configuración usar>, para probar con fuentes de otra carpeta]
+        vista(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else None)
         return
     metas = [Montaje(c).escribir() for c in PJ if os.path.isdir(os.path.join(FUENTES, c))]
     escribir_meta(metas)

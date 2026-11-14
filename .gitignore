@@ -18,3 +18,7 @@ desktop.ini
 
 # Sitio montado para GitHub Pages (tools/nico/sitio.js; lo monta el workflow)
 _site/
+
+# Cuarto lote del Multiverso: temporales (modelos 3D, renders, candidatas) y el estado del tablero en directo
+tools/nico/multiverso/lote4/trabajo/
+tools/nico/multiverso/lote4/estado/

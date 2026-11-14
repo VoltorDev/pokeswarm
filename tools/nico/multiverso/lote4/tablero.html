@@ -1,0 +1,284 @@
+<title>Multiverso, cuarto lote</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Pixelify+Sans:wght@500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: la Pokédex de expedición de PokéSwarm (tokens de css/tokens-dex.css): una ficha de cristal por personaje,
+   con su pista de 8 etapas, la última imagen a tamaño de píxel y la nota de lo último que pasó. Un solo aspecto, oscuro. */
+:root {
+  color-scheme: dark;
+  --fondo: #050E12;
+  --cristal: #0F2630;
+  --cristal-2: #173640;
+  --bisel: #3B6470;
+  --tinta: #EEF6F7;
+  --tinta-2: #A9C3C9;
+  --rojo: #D7263D;
+  --rojo-oscuro: #8C1328;
+  --pantalla: #62E3DD;
+  --violeta: #9B6BFF;
+  --oro: #F2C14E;
+  --bien: #59D98E;
+  --mal: #FF6B7A;
+  --font-display: "Pixelify Sans", "M PLUS Rounded 1c", system-ui, sans-serif;
+  --font-body: "M PLUS Rounded 1c", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-dato: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+body {
+  background: var(--fondo);
+  color: var(--tinta);
+  font: 500 15px/1.45 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+  background-image: radial-gradient(circle at 20% -10%, rgba(98, 227, 221, .08), transparent 45%),
+                    radial-gradient(circle at 110% 10%, rgba(155, 107, 255, .08), transparent 40%);
+}
+.envoltura { max-width: 1240px; margin: 0 auto; display: grid; gap: 20px; }
+header.cab { display: grid; gap: 12px; }
+.titulo { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rotom { width: 36px; height: 36px; flex: none; }
+h1 { font: 700 clamp(26px, 4vw, 38px)/1.05 var(--font-display); margin: 0; letter-spacing: .5px; text-wrap: balance; }
+.sub { color: var(--tinta-2); margin: 0; max-width: 70ch; }
+.conexion { display: inline-flex; align-items: center; gap: 6px; font: 500 12px var(--font-dato); color: var(--tinta-2);
+  border: 1px solid var(--bisel); border-radius: 999px; padding: 3px 10px; }
+.conexion i { width: 8px; height: 8px; border-radius: 50%; background: var(--bisel); }
+.conexion.vivo i { background: var(--bien); box-shadow: 0 0 0 3px rgba(89, 217, 142, .2); }
+.conexion.mal i { background: var(--mal); }
+
+.resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.cifra { background: var(--cristal); border: 1px solid var(--bisel); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+.cifra b { font: 700 26px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.cifra span { color: var(--tinta-2); font-size: 12px; letter-spacing: .4px; text-transform: uppercase; }
+.etapas-total { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 6px; }
+.etapa-total { display: grid; gap: 4px; font-size: 12px; color: var(--tinta-2); }
+.etapa-total .barra { height: 6px; border-radius: 3px; background: var(--cristal-2); overflow: hidden; }
+.etapa-total .barra i { display: block; height: 100%; background: var(--pantalla); }
+.etapa-total em { font-style: normal; font-family: var(--font-dato); color: var(--tinta); font-variant-numeric: tabular-nums; }
+
+.filtros { display: flex; gap: 6px; flex-wrap: wrap; }
+.filtros button { font: 800 13px var(--font-body); color: var(--tinta-2); background: transparent; border: 1px solid var(--bisel);
+  border-radius: 999px; padding: 6px 12px; cursor: pointer; min-height: 34px; }
+.filtros button[aria-pressed="true"] { background: var(--tinta); color: var(--fondo); border-color: var(--tinta); }
+.filtros button:focus-visible, .ficha summary:focus-visible { outline: 2px solid var(--pantalla); outline-offset: 2px; }
+
+.rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; }
+.ficha { background: linear-gradient(180deg, var(--cristal-2), var(--cristal) 120px); border: 1px solid var(--bisel);
+  border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto auto 1fr auto; min-width: 0; }
+.ficha.listo { border-color: var(--bien); }
+.ficha.problema { border-color: var(--mal); }
+.ficha-cab { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 14px 8px; align-items: start; }
+.ficha-cab h2 { font: 700 20px/1.1 var(--font-display); margin: 0; letter-spacing: .3px; min-width: 0; overflow-wrap: anywhere; }
+.num { font: 500 12px var(--font-dato); color: var(--pantalla); font-variant-numeric: tabular-nums; }
+.saga { grid-column: 1 / -1; color: var(--tinta-2); font-size: 13px; }
+.chips { grid-column: 1 / -1; display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.chip { font: 800 11px var(--font-body); padding: 2px 8px; border-radius: 999px; background: var(--cristal); border: 1px solid var(--bisel); color: var(--tinta); }
+.sello { font: 800 11px var(--font-body); padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+.sello.pendiente { color: var(--tinta-2); border: 1px solid var(--bisel); }
+.sello.en-curso { color: var(--fondo); background: var(--pantalla); }
+.sello.listo { color: var(--fondo); background: var(--bien); }
+.sello.problema { color: var(--fondo); background: var(--mal); }
+
+.pista { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; padding: 0 14px 10px; }
+.paso { height: 8px; border-radius: 2px; background: var(--cristal); border: 1px solid var(--bisel); }
+.paso.en-curso { background: var(--pantalla); border-color: var(--pantalla); animation: latido 1.4s ease-in-out infinite; }
+.paso.hecho { background: var(--bien); border-color: var(--bien); }
+.paso.problema { background: var(--mal); border-color: var(--mal); }
+@keyframes latido { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .paso.en-curso { animation: none; } }
+
+.vista { margin: 0 14px; background: repeating-conic-gradient(#0b1d24 0 25%, #0e232b 0 50%) 0 0 / 16px 16px;
+  border: 1px solid var(--bisel); border-radius: 10px; min-height: 150px; display: grid; place-items: center; overflow: hidden; position: relative; }
+.vista img { display: block; max-width: 100%; max-height: 260px; image-rendering: pixelated; }
+.vista .vacio { color: var(--tinta-2); font-size: 13px; padding: 16px; text-align: center; max-width: 30ch; }
+.vista .pie-img { position: absolute; left: 6px; bottom: 6px; font: 500 11px var(--font-dato); background: rgba(5, 14, 18, .8);
+  padding: 2px 6px; border-radius: 6px; color: var(--tinta-2); }
+.nota { padding: 10px 14px 4px; display: grid; gap: 2px; min-width: 0; }
+.nota b { font: 800 12px var(--font-body); color: var(--pantalla); letter-spacing: .3px; }
+.nota p { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.nota time { font: 500 11px var(--font-dato); color: var(--tinta-2); }
+details.detalle { border-top: 1px solid var(--bisel); margin-top: 8px; }
+details.detalle summary { cursor: pointer; padding: 8px 14px; font: 800 13px var(--font-body); color: var(--tinta-2); list-style: none; }
+details.detalle summary::before { content: "▸ "; }
+details.detalle[open] summary::before { content: "▾ "; }
+.lista-etapas { list-style: none; margin: 0; padding: 0 14px 12px; display: grid; gap: 6px; }
+.lista-etapas li { display: grid; grid-template-columns: 10px 1fr; gap: 8px; font-size: 13px; }
+.lista-etapas li i { width: 10px; height: 10px; border-radius: 2px; margin-top: 4px; background: var(--cristal-2); border: 1px solid var(--bisel); }
+.lista-etapas li i.en-curso { background: var(--pantalla); }
+.lista-etapas li i.hecho { background: var(--bien); }
+.lista-etapas li i.problema { background: var(--mal); }
+.lista-etapas small { color: var(--tinta-2); display: block; overflow-wrap: anywhere; }
+.datos { padding: 0 14px 12px; display: grid; gap: 4px; font-size: 13px; }
+.datos div { display: grid; grid-template-columns: minmax(70px, auto) 1fr; gap: 8px; }
+.datos dt { color: var(--tinta-2); }
+.datos dd { margin: 0; overflow-wrap: anywhere; }
+.aviso-vacio { background: var(--cristal); border: 1px dashed var(--bisel); border-radius: 12px; padding: 12px 14px; color: var(--tinta-2); }
+</style>
+
+<div class="envoltura">
+  <header class="cab">
+    <div class="titulo">
+      <svg class="rotom" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="11" fill="#8C1328"/><rect x="2" y="2" width="36" height="31.5" rx="11" fill="#D7263D"/><rect x="2" y="2" width="36" height="36" rx="11" fill="none" stroke="#071318" stroke-width="3.5"/><g stroke="#071318" stroke-width="2.2" fill="#62E3DD"><ellipse cx="14" cy="17" rx="4.4" ry="6.3" transform="rotate(10 14 17)"/><ellipse cx="26" cy="17" rx="4.4" ry="6.3" transform="rotate(-10 26 17)"/></g><circle cx="13.4" cy="13.8" r="1.7" fill="#fff"/><circle cx="25.4" cy="13.8" r="1.7" fill="#fff"/></svg>
+      <h1>Multiverso, cuarto lote</h1>
+      <span class="conexion" id="conexion"><i></i><span id="conexion-texto">Conectando…</span></span>
+    </div>
+    <p class="sub">Los 14 personajes nuevos de PokéSwarm, del estudio de su saga a las hojas de sprites y la revisión. Cada tarjeta se actualiza sola mientras se trabaja: la pista de 8 etapas, lo último que pasó y la imagen más reciente.</p>
+    <div class="resumen" id="resumen"></div>
+    <div class="etapas-total" id="etapas-total"></div>
+  </header>
+  <div class="filtros" role="group" aria-label="Qué enseñar">
+    <button type="button" id="f-todos" data-filtro="todos" aria-pressed="true">Todos</button>
+    <button type="button" id="f-curso" data-filtro="en-curso" aria-pressed="false">En curso</button>
+    <button type="button" id="f-problema" data-filtro="problema" aria-pressed="false">Con problemas</button>
+    <button type="button" id="f-listo" data-filtro="listo" aria-pressed="false">Listos</button>
+  </div>
+  <p class="aviso-vacio" id="aviso-vacio" hidden></p>
+  <main class="rejilla" id="rejilla"></main>
+</div>
+
+<script>
+(function () {
+  const ROSTER = [
+    ['mario', 10016, 'Mario', 'Super Mario'], ['sonic', 10017, 'Sonic', 'Sonic the Hedgehog'], ['goku', 10018, 'Goku', 'Dragon Ball'],
+    ['cloud', 10019, 'Cloud', 'Final Fantasy VII'], ['arthas', 10020, 'Arthas, el Rey Exánime', 'Warcraft'], ['geralt', 10021, 'Geralt', 'The Witcher'],
+    ['dk', 10022, 'Donkey Kong', 'Donkey Kong'], ['bowser', 10023, 'Bowser', 'Super Mario'], ['crash', 10024, 'Crash Bandicoot', 'Crash Bandicoot'],
+    ['scorpion', 10025, 'Scorpion', 'Mortal Kombat'], ['subzero', 10026, 'Sub-Zero', 'Mortal Kombat'], ['snake', 10027, 'Solid Snake', 'Metal Gear'],
+    ['lara', 10028, 'Lara Croft', 'Tomb Raider'], ['spyro', 10029, 'Spyro', 'Spyro the Dragon']
+  ].map(([clave, dex, nombre, saga]) => ({ clave, dex, nombre, saga }));
+  const ETAPAS = [['ficha', 'Ficha'], ['datos', 'Datos en el juego'], ['imagen', 'Imagen base'], ['modelo', 'Modelo 3D'],
+    ['rotaciones', '8 direcciones'], ['andar', 'Andar'], ['hojas', 'Hojas (7 animaciones)'], ['revision', 'Revisión']];
+  const NOMBRE_ETAPA = Object.fromEntries(ETAPAS);
+  const ESTADO_TXT = { pendiente: 'Pendiente', 'en-curso': 'En curso', hecho: 'Hecho', problema: 'Problema' };
+  const ultimo = {};          // clave -> datos del avance más reciente
+  const imagenes = {};        // imgId -> data URI (o null mientras llega)
+  let filtro = 'todos';
+  let db = null;
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  try { const f = localStorage.getItem('tablero.filtro'); if (f) filtro = f; } catch (e) { /* sin almacenamiento */ }
+
+  function estadoFicha(u) {
+    if (!u) return 'pendiente';
+    const e = u.etapas || {};
+    if (e.revision && e.revision.estado === 'hecho') return 'listo';
+    if (Object.values(e).some(x => x && x.estado === 'problema')) return 'problema';
+    if (Object.values(e).some(x => x && (x.estado === 'en-curso' || x.estado === 'hecho'))) return 'en-curso';
+    return 'pendiente';
+  }
+  const SELLO = { pendiente: 'Pendiente', 'en-curso': 'En curso', listo: 'Listo', problema: 'Problema' };
+
+  function hace(iso) {
+    if (!iso) return '';
+    const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
+    if (s < 60) return 'hace un momento';
+    if (s < 3600) return 'hace ' + Math.round(s / 60) + ' min';
+    if (s < 86400) return 'hace ' + Math.round(s / 3600) + ' h';
+    const d = new Date(iso), p = n => String(n).padStart(2, '0');
+    return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  function resumen() {
+    const est = ROSTER.map(p => estadoFicha(ultimo[p.clave]));
+    const n = k => est.filter(e => e === k).length;
+    $('resumen').innerHTML = [['listo', 'listos de 14'], ['en-curso', 'en curso'], ['problema', 'con problemas'], ['pendiente', 'sin empezar']]
+      .map(([k, t]) => `<div class="cifra"><b>${n(k)}</b><span>${t}</span></div>`).join('');
+    $('etapas-total').innerHTML = ETAPAS.map(([id, nom]) => {
+      const hechos = ROSTER.filter(p => ((ultimo[p.clave] || {}).etapas || {})[id] && ultimo[p.clave].etapas[id].estado === 'hecho').length;
+      return `<div class="etapa-total"><span>${esc(nom)} <em>${hechos}/14</em></span><span class="barra" aria-hidden="true"><i style="width:${(hechos / 14 * 100).toFixed(1)}%"></i></span></div>`;
+    }).join('');
+  }
+
+  function tarjeta(p) {
+    const u = ultimo[p.clave], e = (u && u.etapas) || {}, est = estadoFicha(u), d = (u && u.datos) || {};
+    const tipos = d.tipos ? d.tipos.split('/').map(t => t.trim()).filter(Boolean) : [];
+    const img = u && u.imgId ? imagenes[u.imgId] : null;
+    const vista = img ? `<img src="${img}" alt="${esc(p.nombre)}: ${esc(NOMBRE_ETAPA[u.imgEtapa] || 'imagen')}"><span class="pie-img">${esc(NOMBRE_ETAPA[u.imgEtapa] || '')}</span>`
+      : `<p class="vacio">${u && u.imgId ? 'Cargando la imagen…' : 'Aún sin imagen: saldrá aquí en cuanto haya la primera (imagen base, modelo o sprites).'}</p>`;
+    const ult = u ? `<b>${esc(NOMBRE_ETAPA[u.ultimaEtapa] || '')} · ${esc(ESTADO_TXT[(e[u.ultimaEtapa] || {}).estado] || '')}</b><p>${esc(u.nota || 'Sin nota.')}</p><time datetime="${esc(u.actualizado)}">${esc(hace(u.actualizado))}</time>`
+      : '<b>Sin empezar</b><p>Esperando su turno.</p>';
+    const filasDatos = Object.entries(d).filter(([k]) => k !== 'tipos').map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+    return `<article class="ficha ${est}" data-estado="${est}">
+      <div class="ficha-cab">
+        <h2>${esc(p.nombre)}</h2><span class="sello ${est}">${SELLO[est]}</span>
+        <span class="saga"><span class="num">N.º ${p.dex}</span> · ${esc(p.saga)}</span>
+        ${tipos.length ? `<div class="chips">${tipos.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="pista" role="img" aria-label="${ETAPAS.map(([id, nom]) => nom + ': ' + (ESTADO_TXT[(e[id] || {}).estado] || 'Pendiente')).join(', ')}">
+        ${ETAPAS.map(([id, nom]) => `<span class="paso ${(e[id] || {}).estado || ''}" title="${esc(nom)}: ${esc(ESTADO_TXT[(e[id] || {}).estado] || 'Pendiente')}"></span>`).join('')}
+      </div>
+      <div class="vista">${vista}</div>
+      <div>
+        <div class="nota">${ult}</div>
+        <details class="detalle" id="det-${p.clave}"><summary>Etapas y datos</summary>
+          <ul class="lista-etapas">${ETAPAS.map(([id, nom]) => { const x = e[id] || {};
+            return `<li><i class="${x.estado || ''}"></i><span>${esc(nom)}: ${esc(ESTADO_TXT[x.estado] || 'Pendiente')}${x.nota ? `<small>${esc(x.nota)}</small>` : ''}${x.t ? `<small>${esc(hace(x.t))}</small>` : ''}</span></li>`; }).join('')}</ul>
+          ${filasDatos ? `<dl class="datos">${filasDatos}</dl>` : ''}
+        </details>
+      </div>
+    </article>`;
+  }
+
+  function pintar() {
+    const abiertos = new Set([...document.querySelectorAll('details.detalle[open]')].map(x => x.id));
+    resumen();
+    const ver = ROSTER.filter(p => filtro === 'todos' || estadoFicha(ultimo[p.clave]) === filtro);
+    $('rejilla').innerHTML = ver.map(tarjeta).join('');
+    abiertos.forEach(id => { const x = $(id); if (x) x.open = true; });
+    const vacio = $('aviso-vacio');
+    if (!ver.length) { vacio.hidden = false; vacio.textContent = 'Ningún personaje en este estado ahora mismo.'; }
+    else vacio.hidden = true;
+    document.querySelectorAll('.filtros button').forEach(b => b.setAttribute('aria-pressed', b.dataset.filtro === filtro ? 'true' : 'false'));
+  }
+
+  document.querySelectorAll('.filtros button').forEach(b => b.addEventListener('click', () => {
+    filtro = b.dataset.filtro;
+    try { localStorage.setItem('tablero.filtro', filtro); } catch (e) { /* nada */ }
+    pintar();
+  }));
+
+  function conexion(clase, texto) {
+    const c = $('conexion');
+    c.className = 'conexion' + (clase ? ' ' + clase : '');
+    $('conexion-texto').textContent = texto;
+  }
+
+  function pedirImagen(id) {
+    if (!db || !id || id in imagenes) return;
+    imagenes[id] = null;
+    db.doc('imagenes/' + id).get().then(s => {
+      const d = s.exists ? s.data() : null;
+      if (d && typeof d.src === 'string' && d.src.startsWith('data:image/')) { imagenes[id] = d.src; pintar(); }
+      else { delete imagenes[id]; setTimeout(() => pedirImagen(id), 4000); }
+    }).catch(() => { delete imagenes[id]; setTimeout(() => pedirImagen(id), 6000); });
+  }
+
+  function empezar() {
+    let espera = setTimeout(() => conexion('mal', 'Sin respuesta de los datos todavía'), 10000);
+    db.collection('eventos').onSnapshot(snap => {
+      if (!snap.metadata.fromCache) { clearTimeout(espera); conexion('vivo', 'En directo'); }
+      for (const doc of snap.docs) {
+        const d = doc.data();
+        if (!d || !d.clave) continue;
+        if (!ultimo[d.clave] || (d.n || 0) > (ultimo[d.clave].n || 0)) ultimo[d.clave] = d;
+      }
+      for (const p of ROSTER) { const u = ultimo[p.clave]; if (u && u.imgId) pedirImagen(u.imgId); }
+      pintar();
+    }, err => {
+      clearTimeout(espera);
+      conexion('mal', err && err.code === 'revoked' ? 'Sin acceso a los datos' : 'Se ha cortado la conexión con los datos');
+    });
+  }
+
+  pintar();
+  setInterval(() => { document.querySelectorAll('.nota time').forEach(t => { t.textContent = hace(t.getAttribute('datetime')); }); }, 30000);
+  const c = window.claude;
+  if (!c || typeof c.use !== 'function') { conexion('mal', 'Sin datos en directo en esta vista'); return; }
+  c.use('db').then(x => {
+    db = x;
+    if (!db) { conexion('mal', 'Sin datos en directo en esta vista'); return; }
+    empezar();
+  }).catch(() => conexion('mal', 'Sin datos en directo en esta vista'));
+})();
+</script>

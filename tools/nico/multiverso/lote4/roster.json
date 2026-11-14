@@ -1,0 +1,29 @@
+{
+  "nota": "Cuarto lote del Multiverso (PLAN.md, punto 21; elegidos por Nico el 14-11-2026, con Scorpion y Sub-Zero los dos). clave = carpeta de fuentes/ y entrada de PJ en montar.py.",
+  "personajes": [
+    { "clave": "mario", "dex": 10016, "nombre": "Mario", "saga": "Super Mario", "propuesta": "Fuego / Normal: bola de fuego que rebota (proyectil) -> Mario Gigante; pisotón (meteoro)" },
+    { "clave": "sonic", "dex": 10017, "nombre": "Sonic", "saga": "Sonic the Hedgehog", "propuesta": "Eléctrico / Tierra: Spin Dash (embestida) -> Super Sonic" },
+    { "clave": "goku", "dex": 10018, "nombre": "Goku", "saga": "Dragon Ball", "propuesta": "Lucha / Psíquico: Kamehameha (rayo) -> Genkidama (meteoro); variocolor Super Saiyan" },
+    { "clave": "cloud", "dex": 10019, "nombre": "Cloud", "saga": "Final Fantasy VII", "propuesta": "Acero / Dragón: Espada Mortal / Buster Sword (golpe) -> Omnilátigo" },
+    { "clave": "arthas", "dex": 10020, "nombre": "Arthas, el Rey Exánime", "saga": "Warcraft", "propuesta": "Hielo / Siniestro: Agonía de Escarcha (golpe) -> Invierno Remoto (aura que frena)" },
+    { "clave": "geralt", "dex": 10021, "nombre": "Geralt", "saga": "The Witcher", "propuesta": "Acero / Psíquico: espada de plata (golpe); señales Igni (abanico), Aard (nova), Quen (potenciador)" },
+    { "clave": "dk", "dex": 10022, "nombre": "Donkey Kong", "saga": "Donkey Kong", "propuesta": "Tierra / Lucha: barril (bumerán); palmada (aura)" },
+    { "clave": "bowser", "dex": 10023, "nombre": "Bowser", "saga": "Super Mario", "propuesta": "Fuego / Dragón: aliento de fuego; el malo de Mario" },
+    { "clave": "crash", "dex": 10024, "nombre": "Crash Bandicoot", "saga": "Crash Bandicoot", "propuesta": "Tierra / Normal: giro (aura); caja TNT (mina)" },
+    { "clave": "scorpion", "dex": 10025, "nombre": "Scorpion", "saga": "Mortal Kombat", "propuesta": "Fuego / Fantasma: lanza «Get over here!» (cadena)" },
+    { "clave": "subzero", "dex": 10026, "nombre": "Sub-Zero", "saga": "Mortal Kombat", "propuesta": "Hielo / Lucha: bola de hielo que congela" },
+    { "clave": "snake", "dex": 10027, "nombre": "Solid Snake", "saga": "Metal Gear", "propuesta": "Acero / Siniestro: Claymore (mina); caja de cartón (potenciador)" },
+    { "clave": "lara", "dex": 10028, "nombre": "Lara Croft", "saga": "Tomb Raider", "propuesta": "Tierra / Normal: pistolas dobles (abanico)" },
+    { "clave": "spyro", "dex": 10029, "nombre": "Spyro", "saga": "Spyro the Dragon", "propuesta": "Fuego / Dragón: llamarada (abanico); embestida con los cuernos" }
+  ],
+  "etapas": [
+    { "id": "ficha", "nombre": "Ficha (estudio de la saga)" },
+    { "id": "datos", "nombre": "Datos en el juego" },
+    { "id": "imagen", "nombre": "Imagen base" },
+    { "id": "modelo", "nombre": "Modelo 3D" },
+    { "id": "rotaciones", "nombre": "8 direcciones" },
+    { "id": "andar", "nombre": "Andar" },
+    { "id": "hojas", "nombre": "Hojas (7 animaciones)" },
+    { "id": "revision", "nombre": "Revisión" }
+  ]
+}
