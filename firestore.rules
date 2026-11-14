@@ -11,7 +11,7 @@ rules_version = '2';
 //   pres/{uid}             en línea (aproximado) · inv/{para_de} invitaciones
 //   sugerencias/{id}       buzón de sugerencias y fallos: cualquiera deja una, sólo el buzón las lee
 //   votaciones/{id}        votación del siguiente personaje: el recuento, que lee cualquier cuenta
-//   votaciones/{id}/votos/{uid}  el voto de cada cuenta: uno, para siempre, con el recuento subido en 1 a la vez
+//   votaciones/{id}/votos/{uid}  el voto de cada cuenta (dos elegidos: 2 y 1 puntos): uno, para siempre, con el recuento a la vez
 // Todo lo demás está cerrado.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -213,17 +213,19 @@ service cloud.firestore {
     }
 
     // ---------- votación del siguiente personaje (js/ui/votacion.js) ----------
-    // votaciones/{vid} = { c: { opción: votos } }; votaciones/{vid}/votos/{uid} = { p: opción, at }. El juego los escribe
-    // juntos en una transacción: el voto sólo se crea (una vez, el tuyo) si en la misma escritura el contador de su
-    // opción sube exactamente 1, y el contador sólo cambia así, con un voto nuevo tuyo en la misma escritura. Las
-    // opciones no van aquí (sólo su forma): otra votación no pide desplegar las reglas. tools/nico/votacion-reglas.js.
+    // votaciones/{vid} = { c: { opción: puntos } }; votaciones/{vid}/votos/{uid} = { p1, p2, at }. Cada voto elige a dos
+    // distintos: p1 suma 2 puntos y p2, 1. El juego los escribe juntos en una transacción: el voto sólo se crea (una vez,
+    // el tuyo) si en la misma escritura el recuento sube exactamente eso, y el recuento sólo cambia así, con un voto nuevo
+    // tuyo en la misma escritura. Las opciones no van aquí (sólo su forma): otra votación no pide desplegar las reglas.
+    // Pruebas: tools/nico/votacion-reglas.js.
     function opcionValida(p) { return p is string && p.matches('[a-z0-9-]{2,24}'); }
     function rutaVoto(vid) { return /databases/$(database)/documents/votaciones/$(vid)/votos/$(me()); }
     function rutaRecuento(vid) { return /databases/$(database)/documents/votaciones/$(vid); }
-    function subeUno(p, antes, ahora) {
-      return opcionValida(p)
-        && ahora.diff(antes).affectedKeys().hasOnly([p])
-        && ahora[p] == antes.get(p, 0) + 1;
+    function sumaVoto(p1, p2, antes, ahora) {
+      return opcionValida(p1) && opcionValida(p2) && p1 != p2
+        && ahora.diff(antes).affectedKeys().hasOnly([p1, p2])
+        && ahora[p1] == antes.get(p1, 0) + 2
+        && ahora[p2] == antes.get(p2, 0) + 1;
     }
 
     match /votaciones/{vid} {
@@ -233,17 +235,17 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['c'])
         && request.resource.data.c is map
         && !exists(rutaVoto(vid))
-        && subeUno(getAfter(rutaVoto(vid)).data.p, resource == null ? {} : resource.data.c, request.resource.data.c);
+        && sumaVoto(getAfter(rutaVoto(vid)).data.p1, getAfter(rutaVoto(vid)).data.p2,
+                    resource == null ? {} : resource.data.c, request.resource.data.c);
 
       match /votos/{uid} {
         allow read: if signedIn() && me() == uid;
         allow create: if signedIn() && me() == uid
-          && request.resource.data.keys().hasOnly(['p', 'at'])
-          && opcionValida(request.resource.data.p)
+          && request.resource.data.keys().hasOnly(['p1', 'p2', 'at'])
           && request.resource.data.at == request.time
-          && subeUno(request.resource.data.p,
-                     exists(rutaRecuento(vid)) ? get(rutaRecuento(vid)).data.c : {},
-                     getAfter(rutaRecuento(vid)).data.c);
+          && sumaVoto(request.resource.data.p1, request.resource.data.p2,
+                      exists(rutaRecuento(vid)) ? get(rutaRecuento(vid)).data.c : {},
+                      getAfter(rutaRecuento(vid)).data.c);
       }
     }
 

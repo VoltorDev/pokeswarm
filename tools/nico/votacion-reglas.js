@@ -5,8 +5,8 @@
  * buzon-reglas.js) con firestore.rules tal cual y, por REST con tokens sin firmar, comprueba votaciones/{vid} y
  * votaciones/{vid}/votos/{uid} con las escrituras que hace js/ui/votacion.js (el voto y el contador juntos):
  * - una cuenta vota (también la primera, sin contador aún) y otras suman a la misma opción o a otra;
- * - no se puede votar dos veces, ni a nombre de otro, ni subir el contador sin voto, ni el voto sin contador, ni subir
- *   2, ni tocar otra opción, ni que el voto y el contador no coincidan, ni una opción con forma rara, ni la hora del
+ * - no se puede votar dos veces, ni a nombre de otro, ni subir el contador sin voto, ni el voto sin contador, ni un
+ *   solo personaje o el mismo dos veces, ni otros puntos que 2 y 1, ni tocar una tercera opción, ni que el voto y el contador no coincidan, ni una opción con forma rara, ni la hora del
  *   cliente, ni campos de más, ni un invitado;
  * - el recuento lo lee cualquier cuenta (no un invitado); el voto, sólo su dueño; nadie lo cambia ni lo borra.
  * Y que las opciones de G.MODS.votacion tienen la forma que piden las reglas. Unos 20 s. Sale con 1 si algo falla.
@@ -89,13 +89,14 @@ const DOCS = `projects/${PROJ}/databases/(default)/documents`;
 const nombreRecuento = vid => `${DOCS}/votaciones/${vid}`;
 const nombreVoto = (vid, uid) => `${DOCS}/votaciones/${vid}/votos/${uid}`;
 const campo = k => /^[a-z_][a-z0-9_]*$/i.test(k) ? k : '`' + k + '`';
-/** Lo que manda el SDK en la transacción de votacion.js: set({ c: { p: n } }, { merge: true }) en el recuento. */
-const wRecuento = (vid, p, n, extra = {}) => ({ update: { name: nombreRecuento(vid),
-  fields: Object.assign({ c: { mapValue: { fields: { [p]: { integerValue: String(n) } } } } }, extra) },
-  updateMask: { fieldPaths: ['c.' + campo(p)].concat(Object.keys(extra)) } });
-/** ...y set({ p, at: serverTimestamp() }) en el voto. */
-function wVoto(vid, uid, p, { horaCliente = false, extra = {} } = {}) {
-  const fields = Object.assign({ p: { stringValue: p } }, extra);
+/** Lo que manda el SDK en la transacción de votacion.js: set({ c: { p1: n1, p2: n2 } }, { merge: true }) en el recuento.
+ *  sube = { opción: valor nuevo }. */
+const wRecuento = (vid, sube, extra = {}) => ({ update: { name: nombreRecuento(vid),
+  fields: Object.assign({ c: { mapValue: { fields: Object.fromEntries(Object.entries(sube).map(([k, n]) => [k, { integerValue: String(n) }])) } } }, extra) },
+  updateMask: { fieldPaths: Object.keys(sube).map(k => 'c.' + campo(k)).concat(Object.keys(extra)) } });
+/** ...y set({ p1, p2, at: serverTimestamp() }) en el voto. */
+function wVoto(vid, uid, p1, p2, { horaCliente = false, extra = {} } = {}) {
+  const fields = Object.assign({ p1: { stringValue: p1 } }, p2 === undefined ? {} : { p2: { stringValue: p2 } }, extra);
   if (horaCliente) fields.at = { timestampValue: new Date().toISOString() };
   const w = { update: { name: nombreVoto(vid, uid), fields } };
   if (!horaCliente) w.updateTransforms = [{ fieldPath: 'at', setToServerValue: 'REQUEST_TIME' }];
@@ -125,38 +126,39 @@ async function recuento() {
     emu = await arrancar(dir);
     const ok = r => r.status === 200, no = r => r.status === 403;
 
-    let r = await commit(A, [wRecuento(VID, 'mario', 1), wVoto(VID, A, 'mario')]);
-    t('la primera cuenta vota (sin recuento aún: lo crea)', ok(r), r);
-    t('el recuento queda en { mario: 1 }', await recuento() === '{"mario":1}', await recuento());
-    r = await commit(A, [wRecuento(VID, 'sonic', 1), wVoto(VID, A, 'sonic')]);
-    t('no se vota dos veces (otra opción)', no(r), r.status);
-    r = await commit(A, [wRecuento(VID, 'mario', 2), wVoto(VID, A, 'mario')]);
-    t('no se vota dos veces (la misma)', no(r), r.status);
-    r = await commit(B, [wRecuento(VID, 'mario', 2), wVoto(VID, B, 'mario')]);
-    t('otra cuenta suma a la misma opción', ok(r), r);
-    r = await commit(C, [wRecuento(VID, 'sub-zero', 1), wVoto(VID, C, 'sub-zero')]);
-    t('otra cuenta vota a otra opción (con guion)', ok(r), r);
-    const esperado = '{"mario":2,"sub-zero":1}';
-    t('el recuento queda en { mario: 2, sub-zero: 1 }', await recuento() === esperado, await recuento());
+    let r = await commit(A, [wRecuento(VID, { mario: 2, sonic: 1 }), wVoto(VID, A, 'mario', 'sonic')]);
+    t('la primera cuenta vota: Mario +2 y Sonic +1 (sin recuento aún: lo crea)', ok(r), r);
+    t('el recuento queda en { mario: 2, sonic: 1 }', await recuento() === '{"mario":2,"sonic":1}', await recuento());
+    r = await commit(A, [wRecuento(VID, { goku: 2, cloud: 1 }), wVoto(VID, A, 'goku', 'cloud')]);
+    t('no se vota dos veces (otras opciones)', no(r), r.status);
+    r = await commit(B, [wRecuento(VID, { sonic: 3, mario: 3 }), wVoto(VID, B, 'sonic', 'mario')]);
+    t('otra cuenta suma a las mismas al revés: Sonic +2 y Mario +1', ok(r), r);
+    r = await commit(C, [wRecuento(VID, { 'sub-zero': 2, mario: 4 }), wVoto(VID, C, 'sub-zero', 'mario')]);
+    t('otra cuenta vota a una nueva (con guion) y a una que ya tenía puntos', ok(r), r);
+    const esperado = '{"mario":4,"sonic":3,"sub-zero":2}';
+    t('el recuento queda en { mario: 4, sonic: 3, sub-zero: 2 }', await recuento() === esperado, await recuento());
 
     const malas = [
-      ['el contador sin voto', D, [wRecuento(VID, 'sonic', 1)]],
-      ['el voto sin contador', D, [wVoto(VID, D, 'sonic')]],
-      ['subir 2', D, [wRecuento(VID, 'sonic', 2), wVoto(VID, D, 'sonic')]],
-      ['tocar otra opción a la vez', D, [{ update: { name: nombreRecuento(VID), fields: { c: { mapValue: { fields: { sonic: { integerValue: '1' }, mario: { integerValue: '0' } } } } } },
-        updateMask: { fieldPaths: ['c.sonic', 'c.mario'] } }, wVoto(VID, D, 'sonic')]],
-      ['voto y contador no coinciden', D, [wRecuento(VID, 'mario', 3), wVoto(VID, D, 'sonic')]],
-      ['votar a nombre de otro', D, [wRecuento(VID, 'sonic', 1), wVoto(VID, 'voto-prueba-e', 'sonic')]],
-      ['una opción con forma rara', D, [wRecuento(VID, 'Mario!', 1), wVoto(VID, D, 'Mario!')]],
-      ['la hora del cliente', D, [wRecuento(VID, 'sonic', 1), wVoto(VID, D, 'sonic', { horaCliente: true })]],
-      ['un campo de más en el voto', D, [wRecuento(VID, 'sonic', 1), wVoto(VID, D, 'sonic', { extra: { x: { stringValue: 'y' } } })]],
-      ['un campo de más en el recuento', D, [wRecuento(VID, 'sonic', 1, { x: { stringValue: 'y' } }), wVoto(VID, D, 'sonic')]],
-      ['un invitado', null, [wRecuento(VID, 'sonic', 1), wVoto(VID, 'x', 'sonic')]],
-      ['otra votación con id raro', D, [wRecuento('Raro_1', 'sonic', 1), wVoto('Raro_1', D, 'sonic')]]
+      ['el contador sin voto', D, [wRecuento(VID, { goku: 2, cloud: 1 })]],
+      ['el voto sin contador', D, [wVoto(VID, D, 'goku', 'cloud')]],
+      ['un voto con un solo personaje', D, [wRecuento(VID, { goku: 2 }), wVoto(VID, D, 'goku')]],
+      ['el mismo personaje dos veces', D, [wRecuento(VID, { goku: 3 }), wVoto(VID, D, 'goku', 'goku')]],
+      ['los puntos al revés (1 al primero y 2 al segundo)', D, [wRecuento(VID, { goku: 1, cloud: 2 }), wVoto(VID, D, 'goku', 'cloud')]],
+      ['3 puntos al primero', D, [wRecuento(VID, { goku: 3, cloud: 1 }), wVoto(VID, D, 'goku', 'cloud')]],
+      ['sin subir al segundo', D, [wRecuento(VID, { goku: 2 }), wVoto(VID, D, 'goku', 'cloud')]],
+      ['tocar una tercera opción a la vez', D, [wRecuento(VID, { goku: 2, cloud: 1, mario: 0 }), wVoto(VID, D, 'goku', 'cloud')]],
+      ['voto y contador no coinciden', D, [wRecuento(VID, { goku: 2, cloud: 1 }), wVoto(VID, D, 'goku', 'geralt')]],
+      ['votar a nombre de otro', D, [wRecuento(VID, { goku: 2, cloud: 1 }), wVoto(VID, 'voto-prueba-e', 'goku', 'cloud')]],
+      ['una opción con forma rara', D, [wRecuento(VID, { 'Goku!': 2, cloud: 1 }), wVoto(VID, D, 'Goku!', 'cloud')]],
+      ['la hora del cliente', D, [wRecuento(VID, { goku: 2, cloud: 1 }), wVoto(VID, D, 'goku', 'cloud', { horaCliente: true })]],
+      ['un campo de más en el voto', D, [wRecuento(VID, { goku: 2, cloud: 1 }), wVoto(VID, D, 'goku', 'cloud', { extra: { x: { stringValue: 'y' } } })]],
+      ['un campo de más en el recuento', D, [wRecuento(VID, { goku: 2, cloud: 1 }, { x: { stringValue: 'y' } }), wVoto(VID, D, 'goku', 'cloud')]],
+      ['un invitado', null, [wRecuento(VID, { goku: 2, cloud: 1 }), wVoto(VID, 'x', 'goku', 'cloud')]],
+      ['otra votación con id raro', D, [wRecuento('Raro_1', { goku: 2, cloud: 1 }), wVoto('Raro_1', D, 'goku', 'cloud')]]
     ];
     for (const [nom, uid, ws] of malas) { const x = await commit(uid, ws); t(`se rechaza: ${nom}`, no(x), x.status); }
     t('tras los rechazos, el recuento no ha cambiado', await recuento() === esperado, await recuento());
-    r = await commit(D, [wRecuento('otra-2', 'sonic', 1), wVoto('otra-2', D, 'sonic')]);
+    r = await commit(D, [wRecuento('otra-2', { goku: 2, cloud: 1 }), wVoto('otra-2', D, 'goku', 'cloud')]);
     t('otra votación (otro id) no necesita cambiar las reglas', ok(r), r.status);
 
     // Leer.
@@ -166,7 +168,7 @@ async function recuento() {
       && (await rest('GET', `${BASE}/votaciones/${VID}/votos/voto-prueba-sin`, 'voto-prueba-sin')).status === 404, null);
     t('nadie lee el voto de otro ni los lista', no(await rest('GET', `${BASE}/votaciones/${VID}/votos/${A}`, B)) && no(await rest('GET', `${BASE}/votaciones/${VID}/votos`, B)), null);
     // Cambiar o borrar.
-    r = await rest('PATCH', `${BASE}/votaciones/${VID}/votos/${A}?updateMask.fieldPaths=p`, A, { fields: { p: { stringValue: 'goku' } } });
+    r = await rest('PATCH', `${BASE}/votaciones/${VID}/votos/${A}?updateMask.fieldPaths=p1`, A, { fields: { p1: { stringValue: 'goku' } } });
     t('nadie cambia su voto', no(r), r.status);
     t('nadie borra su voto ni el recuento', no(await rest('DELETE', `${BASE}/votaciones/${VID}/votos/${A}`, A)) && no(await rest('DELETE', `${BASE}/votaciones/${VID}`, A)), null);
     t('lo demás sigue cerrado (una cuenta no lee saves/ de otra)', no(await rest('GET', `${BASE}/saves/${B}`, A)), null);

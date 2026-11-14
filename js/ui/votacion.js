@@ -1,22 +1,24 @@
 /* ============ votacion.js — votación del siguiente personaje del Multiverso (MOD nico) ============
  * Petición de Nico (14-11-2026): «Que en el juego salga una ventana al entrar (una vez votan no vuelve a abrirse) para
  * votar qué personaje quieren el siguiente. Una vez votan, que vean cuántos votos lleva cada personaje. Quiero poder ver
- * cómo van los votos en todo momento».
+ * cómo van los votos en todo momento» y, después, «que puedan votar 2, un voto con 2 puntos, y un voto con 1 punto».
  *
  * - Las opciones y el id de la votación, en G.MODS.votacion (js/core/mods.js). Otra votación = otro id.
  * - Al llegar al menú principal, una cuenta de la nube (no un invitado: el voto va con su uid) que aún no ha votado ve la
  *   ventana (#scr-votacion). «Ahora no» la cierra hasta la próxima vez que abra el juego; votar la cierra para siempre.
- * - Tras votar, en la misma ventana, el recuento: cuántos votos lleva cada personaje, al momento (onSnapshot) y con el
- *   suyo marcado. Desde Ajustes > Cuenta, «Votación» abre el recuento (o el voto, si aún no ha votado); las cuentas de
- *   G.MODS.devHuellas (Nico) ven el recuento siempre, hayan votado o no.
- * - Firestore: votaciones/{id} = { c: { opción: votos } } y votaciones/{id}/votos/{uid} = { p, at }. Se escriben juntos
- *   en una transacción; firestore.rules sólo deja crear el voto de uno mismo, una vez, y subir en 1 el contador de su
- *   opción en la misma escritura (tools/nico/votacion-reglas.js lo prueba en el emulador).
+ * - Cada voto elige a dos, en orden: el primero que toca suma 2 puntos y el segundo, 1 (tocar uno elegido lo quita).
+ * - Tras votar, en la misma ventana, el recuento: los puntos de cada personaje, al momento (onSnapshot), con los suyos
+ *   marcados (+2 y +1). Desde Ajustes > Cuenta, «Ver la votación» abre el recuento (o el voto, si aún no ha votado); las
+ *   cuentas de G.MODS.devHuellas (Nico) ven el recuento siempre, hayan votado o no.
+ * - Firestore: votaciones/{id} = { c: { opción: puntos } } y votaciones/{id}/votos/{uid} = { p1, p2, at }. Se escriben
+ *   juntos en una transacción; firestore.rules sólo deja crear el voto de uno mismo, una vez, con dos opciones distintas,
+ *   y subir en la misma escritura 2 puntos a p1 y 1 a p2 (tools/nico/votacion-reglas.js lo prueba en el emulador).
  *
  * Gancho de una línea en render() de settings-ui.js (la sección de Ajustes > Cuenta); lo demás lo mete este fichero al
  * cargar y mira el menú con un MutationObserver, como sugerencias.js. dev.html lo carga tras sugerencias.js.
  */
 G.Votacion = (() => {
+  const PUNTOS = [2, 1];   // el primero elegido y el segundo (firestore.rules exige lo mismo)
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const T = s => (G.T ? G.T(s) : s);
@@ -33,20 +35,21 @@ G.Votacion = (() => {
   }
   const refs = (n, v) => ({ cont: n.fs.collection('votaciones').doc(v.id), voto: n.fs.collection('votaciones').doc(v.id).collection('votos').doc(n.uid) });
   const claveLocal = (v, uid) => `ps.voto.${v.id}.${uid}`;
+  const leerVoto = d => (d && d.p1 && d.p2) ? [d.p1, d.p2] : null;
 
-  /** El recuento ordenado: de más a menos votos y, a igualdad, en el orden de la lista. Puro. */
+  /** El recuento ordenado: de más a menos puntos y, a igualdad, en el orden de la lista. Puro. */
   function recuento(opciones, c) {
     c = c || {};
-    const filas = opciones.map((o, i) => ({ id: o.id, nombre: o.nombre, saga: o.saga, votos: Math.max(0, +c[o.id] || 0), i }));
-    const total = filas.reduce((s, f) => s + f.votos, 0);
-    filas.forEach(f => { f.pct = total ? Math.round(f.votos * 100 / total) : 0; });
-    filas.sort((a, b) => b.votos - a.votos || a.i - b.i);
-    return { filas, total };
+    const filas = opciones.map((o, i) => ({ id: o.id, nombre: o.nombre, saga: o.saga, puntos: Math.max(0, +c[o.id] || 0), i }));
+    const total = filas.reduce((s, f) => s + f.puntos, 0);
+    filas.forEach(f => { f.pct = total ? Math.round(f.puntos * 100 / total) : 0; });
+    filas.sort((a, b) => b.puntos - a.puntos || a.i - b.i);
+    return { filas, total, votantes: Math.floor(total / (PUNTOS[0] + PUNTOS[1])) };
   }
 
   // ---------------- estado ----------------
-  let miVoto = null;        // la opción votada por esta cuenta (si se sabe)
-  let elegida = null;       // la elegida en la ventana antes de votar
+  let miVoto = null;        // [p1, p2] de esta cuenta, si se sabe ('' = sabemos que no ha votado)
+  let elegidas = [];        // las elegidas en la ventana antes de votar, en orden
   let ahoraNo = false;      // «Ahora no» en esta sesión
   let escucha = null;       // onSnapshot del recuento
   let volverA = null;
@@ -55,29 +58,28 @@ G.Votacion = (() => {
   async function yaVotado() {
     const n = nube(), v = cfg();
     if (!n || !v) return null;
-    const local = leer(claveLocal(v, n.uid));
-    if (local) return local;
+    try { const l = JSON.parse(leer(claveLocal(v, n.uid)) || 'null'); if (Array.isArray(l) && l.length === 2) return l; } catch (e) { /* nada */ }
     const s = await refs(n, v).voto.get();
-    const p = s.exists ? (s.data() || {}).p || '' : '';
-    if (p) escribir(claveLocal(v, n.uid), p);
+    const p = s.exists ? leerVoto(s.data()) : null;
+    if (p) escribir(claveLocal(v, n.uid), JSON.stringify(p));
     return p || '';
   }
 
-  /** Vota: el voto y el contador, en una transacción (las reglas exigen las dos cosas a la vez). → la opción. */
-  async function votar(p) {
+  /** Vota: el voto y el contador, en una transacción (las reglas exigen las dos cosas a la vez). → [p1, p2]. */
+  async function votar(p1, p2) {
     const n = nube(), v = cfg();
     if (!n || !v) throw new Error('sin-nube');
-    if (!v.opciones.some(o => o.id === p)) throw new Error('opcion');
+    if (!p1 || !p2 || p1 === p2 || ![p1, p2].every(p => v.opciones.some(o => o.id === p))) throw new Error('opcion');
     const r = refs(n, v);
     await n.fs.runTransaction(async tx => {
       const cs = await tx.get(r.cont), vs = await tx.get(r.voto);
-      if (vs.exists) throw Object.assign(new Error('ya'), { ya: (vs.data() || {}).p || '' });
+      if (vs.exists) throw Object.assign(new Error('ya'), { ya: leerVoto(vs.data()) || '' });
       const c = cs.exists ? ((cs.data() || {}).c || {}) : {};
-      tx.set(r.cont, { c: { [p]: (+c[p] || 0) + 1 } }, { merge: true });
-      tx.set(r.voto, { p, at: firebase.firestore.FieldValue.serverTimestamp() });
+      tx.set(r.cont, { c: { [p1]: (+c[p1] || 0) + PUNTOS[0], [p2]: (+c[p2] || 0) + PUNTOS[1] } }, { merge: true });
+      tx.set(r.voto, { p1, p2, at: firebase.firestore.FieldValue.serverTimestamp() });
     });
-    escribir(claveLocal(v, n.uid), p);
-    return p;
+    escribir(claveLocal(v, n.uid), JSON.stringify([p1, p2]));
+    return [p1, p2];
   }
 
   // ---------------- interfaz ----------------
@@ -119,40 +121,53 @@ G.Votacion = (() => {
     el.className = 'sug-estado' + (clase ? ' ' + clase : '');
   }
 
+  const nombreDe = id => { const o = cfg().opciones.find(x => x.id === id); return o ? T(o.nombre) : id; };
+
   function pintarVoto() {
     const v = cfg();
     $('vot-titulo').textContent = T('¿Qué personaje quieres que llegue al Multiverso?');
-    $('vot-sub').textContent = T('Elige uno: el más votado será el siguiente. Sólo se vota una vez.');
-    $('vot-cuerpo').innerHTML = `<div class="vot-opciones" role="radiogroup" aria-label="${esc(T('Personajes'))}">${v.opciones.map(o =>
-      `<button type="button" class="btn vot-op" role="radio" aria-checked="false" data-op="${esc(o.id)}"><b translate="no">${esc(T(o.nombre))}</b><span translate="no">${esc(o.saga)}</span></button>`).join('')}</div>`;
-    $('vot-cuerpo').querySelectorAll('[data-op]').forEach(b => { b.onclick = () => elegir(b.dataset.op); });
+    $('vot-sub').textContent = T('Elige dos: tu favorito suma 2 puntos y el segundo, 1. El que más puntos tenga será el siguiente. Sólo se vota una vez.');
+    $('vot-cuerpo').innerHTML = `<div class="vot-opciones" role="group" aria-label="${esc(T('Personajes'))}">${v.opciones.map(o =>
+      `<button type="button" class="btn vot-op" aria-pressed="false" data-op="${esc(o.id)}"><b translate="no">${esc(T(o.nombre))}</b><span translate="no">${esc(o.saga)}</span><i class="vot-pts" aria-hidden="true"></i></button>`).join('')}</div>`;
+    $('vot-cuerpo').querySelectorAll('[data-op]').forEach(b => { b.onclick = () => tocar(b.dataset.op); });
     $('vot-cerrar').textContent = T('Ahora no');
-    $('vot-votar').textContent = T('Votar');
     $('vot-votar').classList.remove('hidden');
-    elegir(elegida);
+    pintarElegidas();
   }
 
-  function elegir(p) {
-    elegida = p || null;
+  /** Tocar una opción: si ya estaba elegida, se quita; si no, entra la primera libre (2 puntos y luego 1). */
+  function tocar(p) {
+    if (elegidas.includes(p)) elegidas = elegidas.filter(x => x !== p);
+    else if (elegidas.length < 2) elegidas.push(p);
+    else elegidas = [elegidas[0], p];   // con dos ya elegidas, cambia la segunda
+    pintarElegidas();
+  }
+
+  function pintarElegidas() {
     document.querySelectorAll('#scr-votacion [data-op]').forEach(b => {
-      const on = b.dataset.op === elegida;
-      b.classList.toggle('gold', on);
-      b.setAttribute('aria-checked', on ? 'true' : 'false');
+      const i = elegidas.indexOf(b.dataset.op);
+      b.classList.toggle('gold', i === 0);
+      b.classList.toggle('vot-segunda', i === 1);
+      b.setAttribute('aria-pressed', i >= 0 ? 'true' : 'false');
+      b.querySelector('.vot-pts').textContent = i >= 0 ? '+' + PUNTOS[i] : '';
     });
-    const o = elegida && cfg().opciones.find(x => x.id === elegida);
-    $('vot-votar').disabled = !o;
-    $('vot-votar').textContent = o ? T('Votar a') + ' ' + T(o.nombre) : T('Votar');
+    const b = $('vot-votar');
+    b.disabled = elegidas.length !== 2;
+    b.textContent = elegidas.length === 2 ? T('Votar') : elegidas.length === 1 ? T('Elige tu segundo (1 punto)') : T('Elige tu favorito (2 puntos)');
+    estado(elegidas.length ? `${nombreDe(elegidas[0])} +2` + (elegidas[1] ? ` · ${nombreDe(elegidas[1])} +1` : '') : '');
   }
 
   function pintarRecuento(c) {
-    const v = cfg(), { filas, total } = recuento(v.opciones, c);
+    const v = cfg(), { filas, total, votantes } = recuento(v.opciones, c);
+    const mios = Array.isArray(miVoto) ? miVoto : [];
     $('vot-titulo').textContent = T('Así va la votación');
-    $('vot-sub').textContent = total ? `${total} ${T(total === 1 ? 'voto' : 'votos')} · ${T('se actualiza sola')}` : T('Todavía no ha votado nadie.');
-    const max = filas.length ? Math.max(1, filas[0].votos) : 1;
-    $('vot-cuerpo').innerHTML = `<ol class="vot-lista">${filas.map(f => `<li class="vot-fila${f.id === miVoto ? ' mio' : ''}" data-op="${esc(f.id)}" data-votos="${f.votos}">
-        <span class="vot-nombre"><b translate="no">${esc(T(f.nombre))}</b>${f.id === miVoto ? ` <em>${esc(T('tu voto'))}</em>` : ''}</span>
-        <span class="vot-barra" aria-hidden="true"><i style="width:${(f.votos / max * 100).toFixed(1)}%"></i></span>
-        <span class="vot-num">${f.votos}<small>${f.pct}%</small></span></li>`).join('')}</ol>`;
+    $('vot-sub').textContent = total ? `${votantes} ${T(votantes === 1 ? 'persona ha votado' : 'personas han votado')} · ${T('2 puntos al favorito y 1 al segundo')} · ${T('se actualiza sola')}` : T('Todavía no ha votado nadie.');
+    const max = filas.length ? Math.max(1, filas[0].puntos) : 1;
+    $('vot-cuerpo').innerHTML = `<ol class="vot-lista">${filas.map(f => { const m = mios.indexOf(f.id);
+      return `<li class="vot-fila${m >= 0 ? ' mio' : ''}" data-op="${esc(f.id)}" data-puntos="${f.puntos}">
+        <span class="vot-nombre"><b translate="no">${esc(T(f.nombre))}</b>${m >= 0 ? ` <em>${esc(T('tu voto'))} +${PUNTOS[m]}</em>` : ''}</span>
+        <span class="vot-barra" aria-hidden="true"><i style="width:${(f.puntos / max * 100).toFixed(1)}%"></i></span>
+        <span class="vot-num">${f.puntos}<small>${esc(T('pts'))}</small></span></li>`; }).join('')}</ol>`;
   }
 
   function verRecuento() {
@@ -162,7 +177,7 @@ G.Votacion = (() => {
     $('vot-cuerpo').innerHTML = `<p class="buz-vacio">${esc(T('Cargando…'))}</p>`;
     if (!n) return;
     pararEscucha();
-    escucha = refs(n, v).cont.onSnapshot(s => { if (abierto()) { estado(''); pintarRecuento(s.exists ? (s.data() || {}).c : {}); } },
+    escucha = refs(n, v).cont.onSnapshot(s => { if (abierto()) { if (!/bien/.test($('vot-estado').className)) estado(''); pintarRecuento(s.exists ? (s.data() || {}).c : {}); } },
       () => estado(T('No se ha podido cargar el recuento. Prueba otra vez en un rato.'), 'mal'));
   }
   function pararEscucha() { if (escucha) { try { escucha(); } catch (e) { /* nada */ } escucha = null; } }
@@ -178,7 +193,7 @@ G.Votacion = (() => {
     try { miVoto = await yaVotado(); } catch (e) { miVoto = miVoto || ''; }
     if (!abierto()) return true;
     if (miVoto || forzar === 'recuento' || v.abierta === false) verRecuento(); else pintarVoto();
-    setTimeout(() => { const b = $(miVoto || forzar ? 'vot-cerrar' : 'vot-votar'); if (b && abierto()) (b.disabled ? $('vot-cerrar') : b).focus(); }, 30);
+    setTimeout(() => { const b = $('vot-cerrar'); if (b && abierto()) b.focus(); }, 30);
     return true;
   }
 
@@ -192,20 +207,20 @@ G.Votacion = (() => {
   }
 
   async function mandar() {
-    if (votando || !elegida) return;
+    if (votando || elegidas.length !== 2) return;
     votando = true;
     $('vot-votar').disabled = true;
     estado(T('Votando…'));
     try {
       if (navigator.onLine === false) throw new Error('sin-red');
-      miVoto = await votar(elegida);
+      miVoto = await votar(elegidas[0], elegidas[1]);
       if (G.Audio && G.Audio.sfx) G.Audio.sfx('buy');
       estado(T('¡Gracias por votar!'), 'bien');
       verRecuento();
     } catch (e) {
       if (e && e.ya !== undefined) {   // ya había votado (desde otro dispositivo)
-        miVoto = e.ya;
-        const n = nube(); if (n) escribir(claveLocal(cfg(), n.uid), e.ya);
+        miVoto = e.ya || '';
+        const n = nube(); if (n && e.ya) escribir(claveLocal(cfg(), n.uid), JSON.stringify(e.ya));
         estado(T('Ya habías votado.'));
         verRecuento();
       } else {
@@ -256,7 +271,7 @@ G.Votacion = (() => {
     let uid = null;
     new MutationObserver(() => {
       const n = nube(), u = n ? n.uid : null;
-      if (u !== uid) { uid = u; miVoto = null; ahoraNo = false; }   // otra cuenta: vuelve a mirar
+      if (u !== uid) { uid = u; miVoto = null; ahoraNo = false; elegidas = []; }   // otra cuenta: vuelve a mirar
       if (menuLibre()) quizas();
     }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
   }
@@ -270,5 +285,5 @@ G.Votacion = (() => {
     else iniciar();
   }
 
-  return { abrir, cerrar, abierto, recuento, votar, ajustes };
+  return { abrir, cerrar, abierto, recuento, votar, ajustes, PUNTOS };
 })();

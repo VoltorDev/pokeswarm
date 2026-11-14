@@ -4,7 +4,8 @@
  * Con el emulador de Firebase (auth, firestore y database, proyecto demo-ps, las reglas de firestore.rules tal cual, como
  * buzon-e2e.js) y el juego en index.html?emu (js/ui/votacion.js):
  * - un invitado no ve la ventana y Ajustes > Cuenta le dice que inicie sesión;
- * - una cuenta la ve al llegar al menú; «Ahora no» la cierra en esa sesión y vuelve a salir en otra; vota y ve el recuento,
+ * - una cuenta la ve al llegar al menú; «Ahora no» la cierra en esa sesión y vuelve a salir en otra; elige dos (2 y 1
+ *   puntos; tocar uno elegido lo quita), vota y ve el recuento,
  *   que queda en Firestore;
  * - otra cuenta, en un móvil (844x390), vota y la ventana abierta de la primera se actualiza sola;
  * - la que ya votó no vuelve a verla en otro navegador, abre el recuento desde Ajustes y no puede votar dos veces;
@@ -133,8 +134,8 @@ async function entrar(P, nombre) {
 const ventana = page => page.locator('#scr-votacion').isVisible().catch(() => false);
 const esperaVentana = (page, ms = 12000) => page.locator('#scr-votacion').waitFor({ state: 'visible', timeout: ms }).then(() => true, () => false);
 const filas = page => page.evaluate(() => [...document.querySelectorAll('#scr-votacion .vot-fila')].map(f => ({
-  nombre: f.querySelector('.vot-nombre b').textContent, votos: +f.dataset.votos, mio: f.classList.contains('mio') })));
-const servidor = page => page.evaluate(id => G.DB.fb.fs.collection('votaciones').doc(id).get({ source: 'server' }).then(s => (s.data() || {}).c || {}), VOTACION);
+  nombre: f.querySelector('.vot-nombre b').textContent, puntos: +f.dataset.puntos, mio: (f.querySelector('em') || {}).textContent || '' })));
+const servidor = page => page.evaluate(id => G.DB.fb.fs.collection('votaciones').doc(id).get({ source: 'server' }).then(s => { const c = (s.data() || {}).c || {}; return Object.fromEntries(Object.keys(c).sort().map(k => [k, c[k]])); }), VOTACION);
 /** ¿Cabe la ventana sin desplazar, con el botón principal entero y de 40 px o más? */
 const cabe = (page, boton) => page.evaluate(b => {
   const c = document.querySelector('.vot-caja'), r = c.getBoundingClientRect(), x = document.getElementById(b).getBoundingClientRect();
@@ -184,12 +185,22 @@ const foto = (page, n) => page.screenshot({ path: path.join(OUT, n + '.png') });
     await entrar(A2, 'Votante');
     t('en otra sesión, sin haber votado, vuelve a salir', await esperaVentana(A2.page));
     await A2.page.click('#scr-votacion [data-op="goku"]');
-    t('al elegir, el botón dice «Votar a Goku»', (await A2.page.textContent('#vot-votar')).trim() === 'Votar a Goku' && !(await A2.page.isDisabled('#vot-votar')));
+    const uno = { boton: (await A2.page.textContent('#vot-votar')).trim(), off: await A2.page.isDisabled('#vot-votar'), pts: await A2.page.textContent('#scr-votacion [data-op="goku"] .vot-pts') };
+    t('con uno elegido: +2 en él y el botón pide el segundo, desactivado', uno.pts === '+2' && uno.off && uno.boton === 'Elige tu segundo (1 punto)', uno);
+    await A2.page.click('#scr-votacion [data-op="sonic"]');
+    await A2.page.click('#scr-votacion [data-op="sonic"]');
+    t('tocar uno elegido lo quita', (await A2.page.textContent('#scr-votacion [data-op="sonic"] .vot-pts')) === '' && await A2.page.isDisabled('#vot-votar'));
+    await A2.page.click('#scr-votacion [data-op="cloud"]');
+    const dos = { boton: (await A2.page.textContent('#vot-votar')).trim(), off: await A2.page.isDisabled('#vot-votar'), pts: await A2.page.textContent('#scr-votacion [data-op="cloud"] .vot-pts'), estado: await A2.page.textContent('#vot-estado') };
+    t('con dos: +1 en el segundo, «Goku +2 · Cloud +1» y «Votar» activo', dos.pts === '+1' && !dos.off && dos.boton === 'Votar' && dos.estado === 'Goku +2 · Cloud +1', dos);
+    await sleep(300);
+    await foto(A2.page, 'votar-dos-1440');
     await A2.page.click('#vot-votar');
     await A2.page.locator('#scr-votacion .vot-fila').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     let f = await filas(A2.page);
-    t('tras votar ve el recuento: Goku 1, el primero y marcado como su voto', f.length === nOps && f[0].nombre === 'Goku' && f[0].votos === 1 && f[0].mio && f.slice(1).every(x => x.votos === 0 && !x.mio), f.slice(0, 3));
-    t('…y en Firestore queda { goku: 1 }', JSON.stringify(await servidor(A2.page)) === '{"goku":1}', await servidor(A2.page));
+    t('tras votar ve el recuento: Goku 2 y Cloud 1, arriba y marcados con su voto', f.length === nOps && f[0].nombre === 'Goku' && f[0].puntos === 2 && /tu voto \+2/.test(f[0].mio)
+      && f[1].nombre === 'Cloud' && f[1].puntos === 1 && /tu voto \+1/.test(f[1].mio) && f.slice(2).every(x => x.puntos === 0 && !x.mio), f.slice(0, 3));
+    t('…y en Firestore queda { cloud: 1, goku: 2 }', JSON.stringify(await servidor(A2.page)) === '{"cloud":1,"goku":2}', await servidor(A2.page));
     await sleep(400);
     await foto(A2.page, 'recuento-1440');
 
@@ -198,6 +209,7 @@ const foto = (page, n) => page.screenshot({ path: path.join(OUT, n + '.png') });
     await registrar(B, 'Movil');
     t('en un móvil (844x390) sale la ventana', await esperaVentana(B.page));
     await B.page.click('#scr-votacion [data-op="mario"]');
+    await B.page.click('#scr-votacion [data-op="goku"]');
     const c2 = await cabe(B.page, 'vot-votar');
     t('…y cabe sin desplazar, con «Votar» entero y de 40 px o más', c2.ok, c2);
     await sleep(400);
@@ -208,11 +220,10 @@ const foto = (page, n) => page.screenshot({ path: path.join(OUT, n + '.png') });
     t('el recuento también cabe en el móvil', c3.ok, c3);
     await sleep(400);
     await foto(B.page, 'recuento-movil');
-    await A2.page.waitForFunction(() => /2 votos/.test(document.getElementById('vot-sub').textContent), null, { timeout: 10000 }).catch(() => {});
+    await A2.page.waitForFunction(() => /^2 personas han votado/.test(document.getElementById('vot-sub').textContent), null, { timeout: 10000 }).catch(() => {});
     f = await filas(A2.page);
-    t('la ventana abierta de la otra cuenta se actualiza sola: 2 votos, Goku (el suyo) y Mario con 1', /2 votos/.test(await A2.page.textContent('#vot-sub'))
-      && f.slice(0, 2).map(x => x.nombre + x.votos).sort().join() === 'Goku1,Mario1' && f.find(x => x.nombre === 'Goku').mio && !f.find(x => x.nombre === 'Mario').mio
-      && f[0].nombre === 'Mario', f.slice(0, 2));   // a igualdad, el orden de la lista (Mario va antes)
+    t('la ventana abierta de la otra cuenta se actualiza sola: 2 personas, Goku 3, Mario 2 y Cloud 1', /^2 personas han votado/.test(await A2.page.textContent('#vot-sub'))
+      && f.slice(0, 3).map(x => x.nombre + x.puntos).join() === 'Goku3,Mario2,Cloud1', f.slice(0, 3));
 
     // 5. La que ya votó, en otra sesión (sin nada en el navegador): no vuelve a salir; Ajustes enseña el recuento.
     const A3 = await jugador(browser, 'cuenta-a-3');
@@ -223,11 +234,11 @@ const foto = (page, n) => page.screenshot({ path: path.join(OUT, n + '.png') });
     await A3.page.click('#vot-abrir');
     await A3.page.locator('#scr-votacion .vot-fila').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     f = await filas(A3.page);
-    t('desde Ajustes > Cuenta abre el recuento, con su voto marcado', f.length && f.find(x => x.nombre === 'Goku').mio && f.filter(x => x.mio).length === 1 && f.reduce((s, x) => s + x.votos, 0) === 2, f.slice(0, 2));
+    t('desde Ajustes > Cuenta abre el recuento, con su voto marcado', f.length && /\+2/.test(f.find(x => x.nombre === 'Goku').mio) && /\+1/.test(f.find(x => x.nombre === 'Cloud').mio) && f.filter(x => x.mio).length === 2 && f.reduce((s, x) => s + x.puntos, 0) === 6, f.slice(0, 3));
     await A3.page.keyboard.press('Escape');
     t('Esc cierra la ventana', !(await ventana(A3.page)));
-    const doble = await A3.page.evaluate(() => G.Votacion.votar('mario').then(() => 'votó', e => (e && e.ya !== undefined) ? 'ya:' + e.ya : 'error'));
-    t('votar otra vez desde la consola no suma: la transacción ve el voto ya hecho', doble === 'ya:goku' && JSON.stringify(await servidor(A3.page)) === '{"goku":1,"mario":1}', doble);
+    const doble = await A3.page.evaluate(() => G.Votacion.votar('mario', 'sonic').then(() => 'votó', e => (e && e.ya !== undefined) ? 'ya:' + e.ya : 'error'));
+    t('votar otra vez desde la consola no suma: la transacción ve el voto ya hecho', doble === 'ya:goku,cloud' && JSON.stringify(await servidor(A3.page)) === '{"cloud":1,"goku":3,"mario":2}', doble);
 
     // 6. La cuenta de Nico (devHuellas): ve el recuento desde Ajustes sin haber votado.
     const N = await jugador(browser, 'nico');
@@ -238,7 +249,7 @@ const foto = (page, n) => page.screenshot({ path: path.join(OUT, n + '.png') });
     await N.page.click('#vot-abrir');
     await N.page.locator('#scr-votacion .vot-fila').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     f = await filas(N.page);
-    t('la cuenta de Nico ve el recuento desde Ajustes sin votar (2 votos, ninguno suyo)', f.length === nOps && f.reduce((s, x) => s + x.votos, 0) === 2 && f.every(x => !x.mio)
+    t('la cuenta de Nico ve el recuento desde Ajustes sin votar (6 puntos, ninguno suyo)', f.length === nOps && f.reduce((s, x) => s + x.puntos, 0) === 6 && f.every(x => !x.mio)
       && await N.page.locator('#vot-votar').isHidden(), f.slice(0, 2));
     await sleep(400);
     await foto(N.page, 'recuento-nico');
@@ -249,7 +260,7 @@ const foto = (page, n) => page.screenshot({ path: path.join(OUT, n + '.png') });
     await E.page.evaluate(() => G.Votacion.abrir());
     await E.page.locator('#scr-votacion .vot-fila').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     const en = { titulo: await E.page.textContent('#vot-titulo'), sub: await E.page.textContent('#vot-sub'), cerrar: await E.page.textContent('#vot-cerrar') };
-    t('en inglés: título, recuento y botón', en.titulo === 'How the vote is going' && /^2 votes · updates live$/.test(en.sub) && /Close/.test(en.cerrar), en);
+    t('en inglés: título, recuento y botón', en.titulo === 'How the vote is going' && /^2 people have voted · 2 points for the favourite, 1 for the second · updates live$/.test(en.sub) && /Close/.test(en.cerrar), en);
 
     for (const P of [I, A, A2, B, A3, N, E]) {
       t(`${P.tag}: consola sin errores`, P.errores.length === 0, P.errores);
