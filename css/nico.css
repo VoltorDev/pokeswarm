@@ -320,6 +320,37 @@ html.pantalla-dividida.hud-dex-logro body:has(#topbar.hidden) .toast { bottom: c
   .guarderia-plaza canvas { width: 54px; height: 45px; }
 }
 
+/* ---------- Votación del siguiente personaje (js/ui/votacion.js, G.Votacion) ----------
+   Encima de Ajustes (60), como el formulario de sugerencias; reutiliza su pie (.sug-pie, .sug-estado). */
+#scr-votacion { z-index: 62; }
+.vot-caja { width: min(640px, 100%); max-height: 100%; overflow-y: auto; }
+.vot-caja h2 { margin-top: 0; }
+.vot-opciones { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.vot-op { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 10px; min-height: 44px; text-align: left; line-height: 1.15; }
+.vot-op b { font-size: 15px; }
+.vot-op span { font-size: 11px; opacity: .75; }
+.vot-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.vot-fila { display: grid; grid-template-columns: minmax(110px, 38%) 1fr auto; align-items: center; gap: 8px; font-size: 14px; }
+.vot-fila.mio .vot-nombre b { color: var(--gold, #e8a33a); }
+.vot-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vot-nombre em { font-style: normal; font-size: 11px; opacity: .8; }
+.vot-barra { height: 10px; border-radius: 5px; background: rgba(255,255,255,.12); overflow: hidden; }
+.vot-barra i { display: block; height: 100%; background: #9b6bff; border-radius: 5px; transition: width .3s; }
+.vot-fila.mio .vot-barra i { background: var(--gold, #e8a33a); }
+.vot-num { min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+.vot-num small { margin-left: 6px; opacity: .7; font-size: 11px; }
+@media (max-height: 519.98px) {
+  .vot-caja { padding: 10px 14px; }
+  .vot-caja h2 { font-size: 18px; margin-bottom: 2px; }
+  .vot-caja .sub { margin: 0 0 6px; font-size: 13px; }
+  .vot-opciones { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 4px; }
+  .vot-op { min-height: 38px; padding: 3px 8px; }
+  .vot-op b { font-size: 14px; }
+  .vot-lista { grid-template-columns: 1fr 1fr; column-gap: 16px; gap: 2px 16px; }
+  .vot-fila { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .vot-barra i { transition: none; } }
+
 /* ---------- Sugerencias y fallos (js/ui/sugerencias.js, G.Sugerencias) ----------
    El formulario va por encima de Ajustes (60) y por debajo del aviso legal (65); el aviso de novedad, junto al botón
    de la barra superior, por encima de ella (25) y por debajo de los avisos de logro. */

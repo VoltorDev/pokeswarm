@@ -478,6 +478,36 @@ G.MODS = {
   sugerenciasAviso: 'sugerencias-1',
   sugerenciasEsperaS: 30,
 
+  /* ---- Votación del siguiente personaje del Multiverso (petición de Nico, 14-11-2026; js/ui/votacion.js) ----
+   * Al llegar al menú, una cuenta de la nube que aún no ha votado ve una ventana para votar (una vez por cuenta; con
+   * «Ahora no», vuelve a salir la próxima vez que abra el juego). Tras votar, ve cuántos votos lleva cada uno, al
+   * momento; también desde Ajustes > Cuenta, y las cuentas de devHuellas siempre, hayan votado o no.
+   * id: el de la votación en Firestore (votaciones/{id}); otra votación = otro id (letras, números y guiones).
+   * abierta: false = ya no se vota (sin ventana al entrar; el recuento sigue en Ajustes).
+   * opciones: id (2-24 letras minúsculas, números y guiones: lo exige firestore.rules), nombre y saga. Son los del
+   *   cuarto lote de PLAN.md (punto 21) más Mega Man (punto 14). null = sin votación. */
+  votacion: {
+    id: 'siguiente-2026-11',
+    abierta: true,
+    opciones: [
+      { id: 'mario', nombre: 'Mario', saga: 'Super Mario' },
+      { id: 'sonic', nombre: 'Sonic', saga: 'Sonic the Hedgehog' },
+      { id: 'goku', nombre: 'Goku', saga: 'Dragon Ball' },
+      { id: 'cloud', nombre: 'Cloud', saga: 'Final Fantasy VII' },
+      { id: 'arthas', nombre: 'Arthas, el Rey Exánime', saga: 'Warcraft' },
+      { id: 'geralt', nombre: 'Geralt', saga: 'The Witcher' },
+      { id: 'donkey-kong', nombre: 'Donkey Kong', saga: 'Donkey Kong' },
+      { id: 'bowser', nombre: 'Bowser', saga: 'Super Mario' },
+      { id: 'crash', nombre: 'Crash Bandicoot', saga: 'Crash Bandicoot' },
+      { id: 'scorpion', nombre: 'Scorpion', saga: 'Mortal Kombat' },
+      { id: 'sub-zero', nombre: 'Sub-Zero', saga: 'Mortal Kombat' },
+      { id: 'snake', nombre: 'Solid Snake', saga: 'Metal Gear' },
+      { id: 'lara', nombre: 'Lara Croft', saga: 'Tomb Raider' },
+      { id: 'spyro', nombre: 'Spyro', saga: 'Spyro the Dragon' },
+      { id: 'mega-man', nombre: 'Mega Man', saga: 'Mega Man' }
+    ]
+  },
+
   /** game.js, checkOrientation(): ¿pide girar una pantalla de w×h px CSS (táctil)? */
   pedirGiro(w, h) {
     if (!(w > 0) || !(h > 0) || !(h > w)) return false;

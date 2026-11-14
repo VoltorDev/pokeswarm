@@ -117,6 +117,7 @@ G.SettingsUI = (() => {
     if (G.Dividida) G.Dividida.ajustes(box, tab);   // MOD nico: «Pantalla dividida», en Controles (js/ui/pantalla-dividida.js)
     if (G.DevMenu) G.DevMenu.ajustes(box, tab);   // MOD nico: menú de pruebas, sólo en la cuenta de Nico (js/ui/dev-menu.js)
     if (G.Sugerencias) G.Sugerencias.ajustes(box, tab);   // MOD nico: el buzón de sugerencias, sólo en la cuenta de Nico (js/ui/sugerencias.js)
+    if (G.Votacion) G.Votacion.ajustes(box, tab);   // MOD nico: «Votación» del siguiente personaje, en Cuenta (js/ui/votacion.js)
     wire(box);
   }
 
