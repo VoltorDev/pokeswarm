@@ -134,7 +134,10 @@ G.MODS = {
    * (encima de shinyMult), como los del regalo «buen humor» (ver gastarRegalo). `save.regalos[id]` lo apunta. */
   regalosCuenta: [
     { id: 'miki-2026-10', huella: '132edb773342e691facbf5871243ad88405d0bfc023800ac51601a43a7689072', t10: 100, coins: 0,
-      shinyMult: 10, texto: 'a mi putita que no le falte nada' }
+      shinyMult: 10, texto: 'a mi putita que no le falte nada' },
+    // Petición de Nico, 14-11-2026: a DumboGuarrilla, 50.000 Pokémonedas y 100 tickets ×10, sin shiny de más.
+    { id: 'dumbo-2026-11', huella: 'd8bea31f5ab911d48ae6e5e674f7ee2ed60966975682cf9a3a7616f05d254ec5', t10: 100, coins: 50000,
+      texto: 'regalito del cuñado' }
   ],
 
   /* El PokéCasino, «Danilo's Gamblers Club» (petición de Nico, 22-10-2026; js/systems/casino.js): ruleta europea
