@@ -137,7 +137,10 @@ G.MODS = {
       shinyMult: 10, texto: 'a mi putita que no le falte nada' },
     // Petición de Nico, 14-11-2026: a DumboGuarrilla, 50.000 Pokémonedas y 100 tickets ×10, sin shiny de más.
     { id: 'dumbo-2026-11', huella: 'd8bea31f5ab911d48ae6e5e674f7ee2ed60966975682cf9a3a7616f05d254ec5', t10: 100, coins: 50000,
-      texto: 'regalito del cuñado' }
+      texto: 'regalito del cuñado' },
+    // Petición de Nico, 20-11-2026: a Vyron, 50.000 Pokémonedas y 50 tickets ×10 (los lila), sin shiny de más.
+    { id: 'vyron-2026-11', huella: 'f14b09c4c6ad15a26ee4fa5116948c09be994ca7e9d327fea800f3fb40ca7db3', t10: 50, coins: 50000,
+      texto: 'Regalo por ser tremendo tragasables' }
   ],
 
   /* El PokéCasino, «Danilo's Gamblers Club» (petición de Nico, 22-10-2026; js/systems/casino.js): ruleta europea
