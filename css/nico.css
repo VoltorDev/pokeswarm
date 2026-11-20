@@ -479,6 +479,8 @@ html.pantalla-dividida.hud-dex-logro body:has(#topbar.hidden) .toast { bottom: c
 }
 /* Ventaja del shiny en su ficha de la colección (G.MODS.notaShiny, 02-11-2026). */
 #dex-detail .shiny-ventaja { margin: 4px 0 8px; font-size: 13px; text-align: center; color: #ffe27a; }
+/* Las formas del Multiverso que salen en la partida (Goku, 20-11-2026; G.MULTIVERSO.ficha): bajo sus ataques, como la de arriba. */
+#dex-detail .mv-formas { margin: 4px 0 8px; font-size: 13px; text-align: center; }
 /* «Inicio de partida (pruebas)» en Mejoras (js/ui/inicio-dev.js, sólo la cuenta de Nico, 04-11-2026): debajo de la lista de
    mejoras, el nivel y los 4 ataques. Usa .panel, .field y .btn de los dos estilos; aquí sólo la colocación. Cada ataque es
    una fila icono · «Ataque N» · ataque · nivel, en una rejilla común (las filas con display: contents) para que los
@@ -493,6 +495,7 @@ html.pantalla-dividida.hud-dex-logro body:has(#topbar.hidden) .toast { bottom: c
 .ini-usar input { width: 20px; height: 20px; margin: 0; accent-color: var(--gold); }
 .ini-nivel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 #ini-nivel { width: 96px; min-height: 44px; font-size: 16px; }
+#ini-forma { width: auto; min-height: 44px; font-size: 16px; padding: 8px 10px; max-width: 100%; min-width: 0; text-overflow: ellipsis; }
 .ini-nota { color: var(--muted); font-size: 13px; }
 .ini-todos-nota { margin: -6px 0 4px 28px; }
 .ini-ataques { display: grid; grid-template-columns: 24px max-content minmax(0, 1fr) 220px; align-items: center; gap: 8px; max-width: 760px; }

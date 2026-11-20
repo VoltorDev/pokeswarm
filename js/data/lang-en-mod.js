@@ -102,6 +102,9 @@ G.I18n.add({
   'Evolucionar en {x}': 'Evolve into {x}', 'EVOLUCIÓN': 'EVOLUTION',
   'Hasta el final de la partida. Vida {x} → {x}, ataque ×{x} → ×{x}, velocidad {x} → {x}.': 'Until the end of the run. HP {x} → {x}, attack ×{x} → ×{x}, speed {x} → {x}.',
   '¡{x} ha evolucionado en {x}!': '{x} evolved into {x}!',
+  // Las formas del Multiverso (Goku, 20-11-2026): la nota de su ficha (G.MULTIVERSO.ficha) y el «Inicio de partida».
+  'En la partida evoluciona:': 'Evolves during the run:', '(nivel {x})': '(level {x})', '(nivel {x}) →': '(level {x}) →',
+  'Empezar evolucionado en': 'Start evolved into', 'Sólo en solitario.': 'Solo only.',
   // El menú de pruebas de Nico (js/ui/dev-menu.js).
   'Menú de pruebas': 'Test menu', 'Sólo lo ve tu cuenta. Suma a tu partida guardada; no cuenta para el ranking.': 'Only your account sees this. It adds to your save; it doesn\'t count for the ranking.',
   '+10 tickets': '+10 tickets', '+1 ticket ×10': '+1 ticket ×10', '+1.000 Pokémonedas': '+1,000 PokéCoins', '+10.000 Pokémonedas': '+10,000 PokéCoins',
@@ -316,6 +319,29 @@ G.I18n.add({
   '¡Evoluciona! ×1,7 daño y +30% tiempo fuera': 'It evolves! ×1.7 damage and +30% time out',
   '+35% tiempo fuera': '+35% time out', 'Ataca un 25% más rápido': 'Attacks 25% faster', '+40% daño y +30% tiempo fuera': '+40% damage and +30% time out',
   'Drácula': 'Dracula',
+  // <lote4>
+  // Cuarto lote (14-11-2026): los nombres propios que son iguales en inglés no se repiten aquí.
+  'Goku Kaio-ken': 'Kaio-ken Goku',
+  'Goku Super Saiyan': 'Super Saiyan Goku',
+  'Junta las manos a un lado y suelta un rayo de energía azul, ancho y largo, en línea recta.': 'Cups his hands at his side and fires a wide, long beam of blue energy in a straight line.',
+  'Transmisión Instantánea': 'Instant Transmission',
+  'Dos dedos a la frente: desaparece y reaparece un poco más allá, golpeando y empujando a todo lo que cruza.': 'Two fingers to his forehead: he vanishes and reappears a little further on, striking and knocking back all in his path.',
+  'Kamehameha Instantáneo': 'Instant Kamehameha',
+  'Fuerza Universal': 'Spirit Bomb',
+  'Levanta los brazos, reúne energía en una esfera enorme y la deja caer sobre un enemigo cercano.': 'Raises his arms, gathers energy into a huge sphere and drops it on a nearby enemy.',
+  'Super Fuerza Universal': 'Super Spirit Bomb',
+  'Puño del Dragón': 'Dragon Fist',
+  'Un puñetazo cargado que atraviesa al enemigo con un dragón dorado: corto, estrecho y lo lanza lejos.': 'A charged punch that rams a golden dragon through the enemy: short, narrow and it sends it flying.',
+  'Puño del Dragón Divino': 'Godlike Dragon Fist',
+  'Bastón Mágico': 'Power Pole',
+  'El bastón rojo se estira hasta el enemigo y vuelve a su mano, golpeando a la ida y a la vuelta.': 'The red staff stretches out to the enemy and shrinks back to his hand, hitting both ways.',
+  'Bastón Mágico Doble': 'Twin Power Pole',
+  'Grito de Combate': 'Kiai',
+  'Un grito de energía: ondas de aire salen de su cuerpo en todas direcciones y atraviesan a uno.': 'A shout of energy: air waves burst out of his body in every direction and pierce one foe.',
+  'Onda Explosiva': 'Explosive Wave',
+  'Judía Mágica': 'Senzu Bean',
+  'No hace daño: acumula REGENERACIÓN de vida.': 'Deals no damage: builds health REGENERATION.',
+  // </lote4>
   // Sugerencias y fallos (js/ui/sugerencias.js)
   'Sugerencias y fallos': 'Suggestions and bugs', 'Sugerencia o fallo': 'Suggestion or bug',
   'Cuéntame qué mejorarías o qué ha fallado: le llega directamente a Nico.': 'Tell me what you\'d improve or what went wrong: it goes straight to Nico.',

@@ -1,8 +1,21 @@
-/* ============ lote4/integrar.js — mete las 14 propuestas del cuarto lote en el juego ============
- *   node tools/nico/multiverso/lote4/integrar.js [--prueba]
+/* ============ lote4/integrar.js — mete las propuestas del cuarto lote en el juego ============
+ *   node tools/nico/multiverso/lote4/integrar.js [--prueba]                    las 14 (todas tienen que pasar validar.js)
+ *   node tools/nico/multiverso/lote4/integrar.js --solo goku[,mario…] [--prueba]  ésas, más las que ya estaban integradas
+ *   node tools/nico/multiverso/lote4/integrar.js --disponibles [--prueba]       las que haya en propuestas/ y pasen validar.js
  *
- * Lee lote4/propuestas/*.json (las 14 tienen que pasar validar.js) y escribe, entre marcas <lote4> … </lote4> (así se
- * puede repetir sin duplicar nada):
+ * Modos (20-11-2026, para meter a Goku antes que los otros 13): el bloque entre marcas se rehace siempre entero y en el
+ * orden de roster.json, así que con --solo las ya integradas (las que hay en el bloque de multiverso.js) se conservan, y
+ * cuando lleguen las demás, otra pasada (--solo, --disponibles o la de las 14) deja lo mismo que si hubieran entrado
+ * juntas. Con --disponibles, las que no pasan validar.js se saltan (y se dice cuáles); una ya integrada que deje de
+ * pasarlo para la integración entera, para no quitarla en silencio.
+ *
+ * Formas («formas» de la propuesta, como Goku -> Goku Kaio-ken -> Goku Super Saiyan): evoluciones de especie que sólo se
+ * alcanzan en la partida. Cada una, una entrada más de PERSONAJES tras la base, con `formaDe` (la forma anterior), `nivel`
+ * (el real: en partida, ×0,5) y el mismo `pool` y `start` que la base; multiverso.js las deja fuera de G.DEX (ni banner ni
+ * colección) y las engancha a G.EVO / G.EVO_NIVEL. Su inglés en lang-en-mod.js, su mención en la tabla de FICHAS.md y su
+ * entrada en PJ de montar.py (clave de CLAVE_FORMA, la carpeta de sus fuentes; variocolor por reglas).
+ *
+ * Lee lote4/propuestas/<clave>.json y escribe, entre marcas <lote4> … </lote4> (así se puede repetir sin duplicar nada):
  *   js/data/multiverso.js       PERSONAJES y ATAQUES (con el comentario de daño nominal frente a un ataque Pokémon de su forma)
  *   js/data/lang-en-mod.js      el inglés: nombres de ataque, descripciones, evoluciones y el nombre si cambia
  *   tools/nico/check.js         la LISTA de §24, los recuentos, los que se llaman igual en inglés y los que flotan
@@ -13,18 +26,78 @@
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm'), { execFileSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..', '..', '..', '..');
-const PRUEBA = process.argv.includes('--prueba');
+const ARGS = process.argv.slice(2);
+const PRUEBA = ARGS.includes('--prueba');
+const DISPONIBLES = ARGS.includes('--disponibles');
+const SOLO = ARGS.includes('--solo') ? String(ARGS[ARGS.indexOf('--solo') + 1] || '').split(',').map(x => x.trim()).filter(Boolean) : null;
 const rd = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const wr = (f, s) => { if (!PRUEBA) fs.writeFileSync(path.join(ROOT, f), s); console.log((PRUEBA ? '(prueba) ' : '') + 'escrito ' + f); };
 const ROSTER = JSON.parse(fs.readFileSync(path.join(__dirname, 'roster.json'), 'utf8')).personajes;
 
-try { execFileSync(process.execPath, [path.join(__dirname, 'validar.js'), 'todos'], { stdio: 'pipe' }); }
-catch (e) { console.error(String(e.stdout || '') + '\nHay propuestas que no pasan validar.js: no integro nada.'); process.exit(1); }
-const P = ROSTER.map(r => {
-  const p = JSON.parse(fs.readFileSync(path.join(__dirname, 'propuestas', r.clave + '.json'), 'utf8'));
-  // El variocolor corregido al revisar los sprites (lote4/sprites/<clave>.json, «vario») gana al de la propuesta.
-  const sp = path.join(__dirname, 'sprites', r.clave + '.json');
-  if (fs.existsSync(sp)) { const x = JSON.parse(fs.readFileSync(sp, 'utf8')); if (Array.isArray(x.vario) && x.vario.length) p.variocolor.reglas = x.vario; }
+// La carpeta de fuentes (y la entrada de PJ en montar.py) de cada forma: la que usa el agente de los sprites
+// (lote4/trabajo/goku-kaioken, goku-ssj). Una forma que no esté aquí usa «<clave>-<dex>» (y se avisa).
+const CLAVE_FORMA = { 10030: 'goku-kaioken', 10031: 'goku-ssj' };
+const claveForma = (p, f) => CLAVE_FORMA[f.dex] || (console.log(`AVISO: forma ${f.dex} sin clave en CLAVE_FORMA: uso ${p.clave}-${f.dex}`), p.clave + '-' + f.dex);
+
+const valida = clave => {
+  try { execFileSync(process.execPath, [path.join(__dirname, 'validar.js'), clave], { stdio: 'pipe' }); return { ok: true }; }
+  catch (e) { return { ok: false, salida: String(e.stdout || e.message) }; }
+};
+const existe = clave => fs.existsSync(path.join(__dirname, 'propuestas', clave + '.json'));
+// Las ya integradas: los números de las entradas base (las que no llevan formaDe) del bloque <lote4> de multiverso.js.
+const YA = (() => {
+  const m = /\/\/ <lote4>[\s\S]*?\/\/ <\/lote4>/.exec(rd('js/data/multiverso.js'));
+  if (!m) return [];
+  const dex = new Set(m[0].split(/\n(?= {4}\{ dex: )/).filter(e => /^ {4}\{ dex: \d+/.test(e) && !/formaDe:/.test(e)).map(e => +/dex: (\d+)/.exec(e)[1]));
+  return ROSTER.filter(r => dex.has(r.dex)).map(r => r.clave);
+})();
+let CLAVES;
+if (SOLO) {
+  const raras = SOLO.filter(c => !ROSTER.some(r => r.clave === c));
+  if (!SOLO.length || raras.length) { console.error('--solo: claves de roster.json separadas por comas' + (raras.length ? ' (desconocidas: ' + raras.join(', ') + ')' : '')); process.exit(1); }
+  CLAVES = ROSTER.map(r => r.clave).filter(c => SOLO.includes(c) || YA.includes(c));
+  const mal = CLAVES.filter(c => !existe(c) || !valida(c).ok);
+  if (mal.length) {
+    for (const c of mal) console.error(existe(c) ? valida(c).salida : `== ${c}: falta propuestas/${c}.json`);
+    console.error('No pasan validar.js: ' + mal.join(', ') + '. No integro nada.');
+    process.exit(1);
+  }
+} else if (DISPONIBLES) {
+  CLAVES = [];
+  for (const r of ROSTER) {
+    if (!existe(r.clave)) {
+      if (YA.includes(r.clave)) { console.error(`${r.clave} está integrada pero falta su propuesta: no integro nada.`); process.exit(1); }
+      continue;
+    }
+    const v = valida(r.clave);
+    if (v.ok) CLAVES.push(r.clave);
+    else if (YA.includes(r.clave)) { console.error(v.salida + `\n${r.clave} ya está integrada y ahora no pasa validar.js: no integro nada (no la quito en silencio).`); process.exit(1); }
+    else console.log(`se salta ${r.clave}: no pasa validar.js (node tools/nico/multiverso/lote4/validar.js ${r.clave})`);
+  }
+} else {
+  try { execFileSync(process.execPath, [path.join(__dirname, 'validar.js'), 'todos'], { stdio: 'pipe' }); }
+  catch (e) { console.error(String(e.stdout || '') + '\nHay propuestas que no pasan validar.js: no integro nada (para integrar sólo algunas: --solo <clave> o --disponibles).'); process.exit(1); }
+  CLAVES = ROSTER.map(r => r.clave);
+}
+if (!CLAVES.length) { console.error('Ninguna propuesta que integrar.'); process.exit(1); }
+console.log('Integro (orden de roster.json): ' + CLAVES.join(', ') + (YA.length ? ' · ya estaban: ' + YA.join(', ') : ''));
+// El variocolor corregido al revisar los sprites (lote4/sprites/<clave>.json, «vario») gana al de la propuesta.
+const leerVario = (clave, V) => {
+  const sp = path.join(__dirname, 'sprites', clave + '.json');
+  if (fs.existsSync(sp)) { const x = JSON.parse(fs.readFileSync(sp, 'utf8')); if (Array.isArray(x.vario) && x.vario.length) V.reglas = x.vario; }
+};
+// Lo que el agente de los sprites añade a la entrada de PJ («propias», «limpias»…), en lote4/sprites/<clave>.json, «pj».
+// Así, volver a pasar integrar.js no lo borra.
+const leerPj = clave => {
+  const sp = path.join(__dirname, 'sprites', clave + '.json');
+  const x = fs.existsSync(sp) ? JSON.parse(fs.readFileSync(sp, 'utf8')) : null;
+  return x && x.pj && typeof x.pj === 'object' ? x.pj : {};
+};
+const P = CLAVES.map(clave => {
+  const p = JSON.parse(fs.readFileSync(path.join(__dirname, 'propuestas', clave + '.json'), 'utf8'));
+  leerVario(clave, p.variocolor);
+  p.formas = Array.isArray(p.formas) ? p.formas : [];
+  for (const f of p.formas) { f.clave = claveForma(p, f); leerVario(f.clave, f.variocolor); }
   return p;
 });
 
@@ -73,9 +146,14 @@ function marcar(src, abre, cierra, cuerpo, insertar) {
 }
 {
   let s = rd('js/data/multiverso.js');
+  const pool = p => lit(p.ataques.map(a => a.id));
   const pers = P.map(p => `    { dex: ${p.dex}, name: ${q(p.nombre)}, types: ${lit(p.types)}, hp: ${p.hp}, spd: ${p.spd}, atk: ${p.atk}, rarity: 2, bst: ${p.bst},\n` +
     `      starter: false, gen: GEN, mv: true, start: ${q(p.ataques[0].id)}, serie: ${q(p.serie)},\n` +
-    `      pool: ${lit(p.ataques.map(a => a.id))} },\n`).join('');
+    `      pool: ${pool(p)} },\n` +
+    p.formas.map((f, i) => `    // forma de ${p.nombre}: sólo evolucionando en la partida (G.EVO desde aquí); ni banner, ni colección, ni de enemigo\n` +
+      `    { dex: ${f.dex}, name: ${q(f.nombre)}, types: ${lit(f.types)}, hp: ${f.hp}, spd: ${f.spd}, atk: ${f.atk}, rarity: ${f.rarity}, bst: ${f.bst},${f.leg ? ' leg: true,' : ''}\n` +
+      `      starter: false, gen: GEN, mv: true, start: ${q(p.ataques[0].id)}, serie: ${q(p.serie)}, formaDe: ${i ? p.formas[i - 1].dex : p.dex}, nivel: ${f.nivel},\n` +
+      `      pool: ${pool(p)} },\n`).join('')).join('');
   s = marcar(s, '    // <lote4> Cuarto lote (14-11-2026; elegido por Nico; fichas en tools/nico/multiverso/FICHAS.md, datos en tools/nico/multiverso/lote4/)',
     '    // </lote4>', pers, (src, bloque) => {
       const k = src.indexOf('  const ATAQUES = [');
@@ -109,6 +187,7 @@ function marcar(src, abre, cierra, cuerpo, insertar) {
   };
   for (const p of P) {
     poner(p.nombre, p.nombreEn);
+    for (const f of p.formas) poner(f.nombre, f.nombreEn);
     for (const a of p.ataques) { poner(a.name, a.nameEn); poner(a.desc, a.descEn); if (a.evo) poner(a.evo[0], a.evoEn); }
   }
   if (conflictos.length) console.log('AVISO: traducciones que ya existen con otro texto (se queda la que había):\n  ' + conflictos.join('\n  '));
@@ -161,12 +240,13 @@ function marcar(src, abre, cierra, cuerpo, insertar) {
 {
   let s = rd('tools/nico/multiverso/FICHAS.md');
   const tabla = '| N.º | Personaje | Saga | Tipos | Vida / velocidad / ataque | Ataque inicial |\n|---|---|---|---|---|---|\n' +
-    P.map(p => `| ${p.dex} | ${p.nombre} | ${p.saga} | ${p.types.map(t => TIPO_ES[t]).join(' / ')} | ${p.hp} / ${p.spd} / ×${String(p.atk).replace('.', ',')} | ${p.ataques[0].name} |`).join('\n');
+    P.map(p => `| ${p.dex} | ${p.nombre}${p.formas.length ? ' (en la partida evoluciona en ' + p.formas.map(f => `${f.nombre}, ${f.dex}`).join(', y en ') + ')' : ''} | ${p.saga} | ${p.types.map(t => TIPO_ES[t]).join(' / ')} | ${p.hp} / ${p.spd} / ×${String(p.atk).replace('.', ',')} | ${p.ataques[0].name} |`).join('\n');
   const cuerpo = '# Cuarto lote (14-11-2026)\n\n' +
     'Petición de Nico (14-11-2026): «empieza a dejar los 13 personajes preparados», los del punto 21 de PLAN.md, con Scorpion y Sub-Zero los dos (14). ' +
     'Cada ficha la escribió un agente estudiando su saga; otro la verificó buscándole fallos (fidelidad al universo y diseño de juego) y un tercero aplicó lo confirmado; ' +
     'al final, un crítico miró el plantel entero (reparto de tipos, mecánicas repetidas, rivales). Los datos de cada uno están en `lote4/propuestas/<clave>.json` ' +
-    '(con su descripción para la imagen y el variocolor), comprobados por `lote4/validar.js` con los mismos rangos que `check.js` §24.\n\n' + tabla + '\n\n' +
+    '(con su descripción para la imagen y el variocolor), comprobados por `lote4/validar.js` con los mismos rangos que `check.js` §24.\n\n' +
+    (P.length < ROSTER.length ? `Integrados en el juego hasta ahora (\`lote4/integrar.js\`): ${P.length} de ${ROSTER.length}, ${P.map(p => p.nombre).join(', ')}.\n\n` : '') + tabla + '\n\n' +
     P.map(p => p.ficha_md.trim() + '\n').join('\n');
   s = marcar(s, '<!-- lote4 -->', '<!-- /lote4 -->\n', cuerpo, (src, bloque) => src.replace(/\s*$/, '\n\n') + bloque);
   wr('tools/nico/multiverso/FICHAS.md', s);
@@ -199,8 +279,12 @@ function marcar(src, abre, cierra, cuerpo, insertar) {
 
 `;
   if (!s.includes('def vario_reglas(')) s = s.replace('# mov: \'anda\'', helper + '# mov: \'anda\'');
+  const extra = clave => Object.entries(leerPj(clave)).map(([k, v]) => `,
+                '${k}': ${py(v)}`).join('');
   const entradas = P.map(p => `    '${p.clave}': {'dex': ${p.dex}, 'mov': '${p.mov}', 'sombra': 1, 'disparo': ${p.disparo},   # ${p.nombre}: ${p.variocolor.descripcion.replace(/\n/g, ' ').slice(0, 90)}\n` +
-    `                'vario': vario_reglas(${py(p.variocolor.reglas)})},\n`).join('');
+    `                'vario': vario_reglas(${py(p.variocolor.reglas)})${extra(p.clave)}},\n` +
+    p.formas.map(f => `    '${f.clave}': {'dex': ${f.dex}, 'mov': '${f.mov}', 'sombra': 1, 'disparo': ${f.disparo},   # ${f.nombre} (forma de ${p.nombre}): ${f.variocolor.descripcion.replace(/\n/g, ' ').slice(0, 70)}\n` +
+      `                'vario': vario_reglas(${py(f.variocolor.reglas)})${extra(f.clave)}},\n`).join('')).join('');
   s = marcar(s, '    # <lote4> Cuarto lote (14-11-2026): imagen de FLUX -> TRELLIS.2 -> rotar3d.py -> pixelar.py, pasos de pasos.py', '    # </lote4>', entradas, (src, bloque) => {
     const k = src.indexOf("    'ash':     {'dex': 10013");
     const fin = src.indexOf('\n}', k);

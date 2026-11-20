@@ -78,8 +78,10 @@ const PJS = [[10001, 'Agumon', 'llama-bebe', 'Llama Bebé', 'Mega Llama'], [1000
   [10010, 'Ojo de Cthulhu', 'siervo-de-cthulhu', 'Siervo de Cthulhu', 'Ojos Fantasmales'],
   // Tercer lote (23-10-2026) y Ash.
   [10011, 'Jefe Maestro', 'rifle-de-asalto', 'Rifle de Asalto', 'Rifle de Batalla'], [10012, 'Kratos', 'espadas-del-caos', 'Espadas del Caos', 'Ciclón del Caos'],
-  [10013, 'Ash', 'pikachu', 'Pikachu', 'Gigavoltio Destructor']];
-const SAGAS = 'Digimon, DOOM, Kirby, Zelda, Metroid, Pac-Man, Castlevania, Terraria, Halo, God of War, Pokémon (anime)';
+  [10013, 'Ash', 'pikachu', 'Pikachu', 'Gigavoltio Destructor'],
+  // Cuarto lote (20-11-2026): Goku; sus formas (10030, 10031) no salen en el banner ni en la colección.
+  [10018, 'Goku', 'kamehameha', 'Kamehameha', 'Super Kamehameha']];
+const SAGAS = 'Digimon, DOOM, Kirby, Zelda, Metroid, Pac-Man, Castlevania, Terraria, Halo, God of War, Pokémon (anime), Dragon Ball';
 
 async function caso(browser, v, estilo, partidas) {
   const tag = `${v.n}-${estilo}`;
@@ -234,7 +236,7 @@ async function caso(browser, v, estilo, partidas) {
   try {
     const V = [{ n: '1440x900', w: 1440, h: 900, dpr: 1 }, { n: '844x390', w: 844, h: 390, dpr: 3, tactil: true }];
     // Una partida con cada uno en escritorio con Dex; en los demás, un reparto (cada uno juega en al menos dos).
-    const PLAN = { '1440x900-dex': PJS.map(x => x[0]), '1440x900-clasico': [10002, 10005, 10009, 10012], '844x390-dex': [10003, 10006, 10007, 10010, 10013],
+    const PLAN = { '1440x900-dex': PJS.map(x => x[0]), '1440x900-clasico': [10002, 10005, 10009, 10012], '844x390-dex': [10003, 10006, 10007, 10010, 10013, 10018],
       '844x390-clasico': [10001, 10004, 10008, 10011] };
     for (const v of V) for (const e of ['dex', 'clasico']) {
       try { await caso(browser, v, e, PLAN[v.n + '-' + e]); } catch (err) { t(`${v.n}-${e}: el recorrido`, false, String(err && err.stack || err)); }

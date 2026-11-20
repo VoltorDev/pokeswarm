@@ -1,0 +1,132 @@
+{
+ "perfil": null,
+ "pixelar": null,
+ "imagen": {
+  "origen": "tinte de las rotaciones y pasos de la base (PixelLab f5ec16a6-cabb-4c86-80ca-593ab7835707)"
+ },
+ "pasos": "pasos.py south,east,north",
+ "vario": [
+  {
+   "si": {
+    "h": [
+     350,
+     5
+    ],
+    "s": [
+     0.8,
+     1
+    ],
+    "v": [
+     0.15,
+     1
+    ]
+   },
+   "a": {
+    "h": 215,
+    "s": 0.9
+   }
+  },
+  {
+   "si": {
+    "h": [
+     330,
+     339
+    ],
+    "s": [
+     0.8,
+     1
+    ],
+    "v": [
+     0.1,
+     1
+    ]
+   },
+   "a": {
+    "h": 225,
+    "s": 0.9
+   }
+  }
+ ],
+ "notas": "Método PixelLab (20-11-2026): Nico juzgó baja la calidad del camino 3D (cara ilegible, perfil gordo); se descarta. Lo del camino 3D queda apartado en fuentes/<clave>/_3d-descartado/ (no se usa) y su descripción, en «notas_3d». Rotaciones de PixelLab por la web (no la API): 4 generaciones gratis del día; personajes f5ec16a6-cabb-4c86-80ca-593ab7835707 (base) y e30d6e79-ecd6-4c68-9f80-806e90e5af29 (Super Saiyan); lo bajado está en lote4/trabajo/pixellab-goku/ y pixellab-goku-ssj/. Cadena: python montar.py traer <clave> lote4/trabajo/pixellab-<clave> → python pasos.py <clave> south,east,north (andar por código) → montar.py hace por código Idle, Attack, Shoot, Charge, Hurt, Faint y el espejo del oeste. Formas: python lote4/trabajo/goku_formas.py kaioken (tinte de Kaio-ken sobre fuentes/goku → fuentes/goku-kaioken, con aura roja) y python lote4/trabajo/goku_formas.py aura-ssj (aura dorada sobre fuentes/goku-ssj; quita antes la anterior). Guía: lote4/trabajo/goku/estilo.md (paletas, tinte de Kaio-ken y aura de Ultimate LSW, de qsab101 «Que~», con permiso de Nico y crédito; falta la línea en CREDITS.md). Vista: python montar.py vista <clave> lote4/trabajo/<clave>/vista (lee el variocolor de lote4/trabajo/<clave>/vario.json; las entradas de PJ de montar.py siguen con las reglas antiguas y hay que pasarles las de «vario»). Tinte (goku_formas.py, tinte_kk): contorno (negro que toca lo transparente) → #68004c; negro de dentro (relleno del pelo) → #160610 (la guía proponía #2a0a1e, a 32 px tiraba a morado); grises del pelo → #4a0636; gi (330-25°, sat ≥ 0,72) → 355° (sombras, valor < 0,6, → 335°); piel (10-38°, sat < 0,72, valor ≥ 0,7) → 6°, rosada y más clara que el gi; azules (sat ≥ 0,45) → morado 272° como en LSW. Aura roja: banda interior (silueta dilatada 1 px) #ff8ca3, exterior (2 px) #ff003f, lenguas de 1-3 px en la mitad de arriba con núcleo #ffe0e6; fuera de los huecos brazo-torso y entre piernas, dentro de las columnas 1-30 y de la fila 1 a los pies. Variocolor: el gi (350-5° y 330-339°, sat ≥ 0,8) → azul; el aura (#ff003f es 345°, #ff8ca3 sat 0,45), la piel y el morado no cambian. Animaciones (20-11-2026, PixelLab web, gratis; tiras en lote4/trabajo/pixellab-goku*/anim-*.png): python lote4/trabajo/goku_anims.py las convierte en animaciones propias de montar.py (fuentes/<clave>/Attack-<dir>.png y Shoot-<dir>.png, celdas de 48 con el personaje donde va su rotación: los lienzos de 44 se centran, los pies quedan en la misma fila; sureste y noreste con las del este, el oeste por espejo). Attack = puñetazo v3-punch, 8 fotogramas [2, 2, 2, 2, 3, 3, 2, 2]. Shoot = Kamehameha, 6 fotogramas [2, 3, 4, 4, 3, 4]: al este, la plantilla «fireball» sin la bola ni el rastro de fuego, con un brillo azul-blanco pequeño (#E8FBFF, #9FE8FF, #3FB8FF) en las manos al cargar y delante de ellas al empujar (el rayo lo dibuja el juego). PJ de montar.py: «propias» {Attack, Shoot} y, en Kaio-ken y SSJ, «limpias»: 'limpias' (fuentes/<clave>/limpias/rot-*.png, sin aura) para Hurt y Faint; montar.py ganó esa opción (self.rot_limpia). Los variocolores de PJ son ya los de «vario». Ojo: integrar.js reescribe el bloque <lote4> de PJ desde las propuestas; si se vuelve a pasar, hay que reponer «propias», «limpias» y estas reglas. Kaio-ken: todas sus animaciones (pasos, Attack, Shoot) salen de las de la base con el mismo tinte y aura (goku_formas.py kaioken); el brillo del Kamehameha no se tiñe y el aura deja 2 px libres alrededor de lo que sobresale respecto del fotograma 0 (puño, manos) y del brillo. Retoque 21-11-2026: carga del Shoot este desde la base (cadera de atrás); el aura sólo deja libre la piel que sobresale (puño, manos) y el brillo, y se quitan los trozos de aura que no tocan el cuerpo.",
+ "notas_3d": "Reproducir (desde tools/nico/multiverso): imagen Lucid Origin semilla 3 → lote4/fondo.py → lote4/malla.ps1 (TRELLIS.2, semilla por defecto; la 7 sale igual de plana) → blender --background --python lote4/trabajo/animar3d_goku.py -- lote4/trabajo/<clave>/modelo.glb lote4/trabajo/<clave>/render lote4/trabajo/<clave>/perfil.json → python pixelar.py lote4/trabajo/<clave>/render <clave> --anim --detalle 0.25 --colores C --alto 30 → python lote4/trabajo/retoque_goku.py <clave> → python lote4/trabajo/vista_goku.py <clave> lote4/trabajo/<clave>/vista (llama a montar.vista con vario_reglas, el de integrar.js, y una entrada de PJ provisional; montar.py aún no tiene ninguna de las dos). animar3d_goku.py es una copia de animar3d.py (el compartido no se toca) con estas claves de perfil nuevas: «fondo», «fondo_piernas», «fondo_cabeza»: TRELLIS deja a Goku plano (torso de 0,17 de fondo por 1,0 de alto; de perfil medía 7 px frente a 20 de frente). Se escala sólo el eje Y (delante-atrás): el cuerpo ×fondo, las piernas por debajo de la cadera ×fondo_piernas (menos, para que el pantalón ancho no tape el paso) y la cabeza por encima del cuello ×fondo_cabeza, con transiciones suaves; los brazos (por sus pesos) no se escalan, para que unas manos algo adelantadas no salgan de perfil como un palo. «brazo_z», «pecho_z», «mano_x»: los brazos están en A, casi horizontales, así que giran sobre el eje vertical del hombro (del costado hacia delante); por debajo de pecho_z sólo cuenta como brazo lo que está a más de mano_x del centro (las manos), no el pantalón ni el fajín; el brazo empieza en brazo_z. «alza»: al ir hacia delante el brazo sube alza×ángulo (puñetazo y Kamehameha a la altura del pecho). «arma_ataque»: el puñetazo con un brazo; el disparo usa «arma» (ambas: Kamehameha). «cabeza», «cuello»: la cabeza ×cabeza desde el cuello, para que pelo y cara ganen píxeles. «pelo», «pelo_z»: el pelo por encima de pelo_z se estira hacia arriba ×pelo. Cámara: el este va en -X (az = -90 - 45·i); en animar3d.py compartido (az = -90 + 45·i) el «este» sale mirando a la IZQUIERDA. retoque_goku.py: (1) ojos: en sur, sureste y suroeste (quietos y animados) la primera fila de piel bajo el flequillo pasa a piel clara con dos ojos oscuros (de frente, cara de 5 con ojos en la 2.ª y la 4.ª; de 3/4, dos ojos hacia el lado al que mira), porque en la malla el flequillo tapa media cara y a 30 px desaparecían; (2) --aura: borde de 1 px #F0283C por fuera del contorno en todos los fotogramas; (3) --sin-ojos: no repinta los ojos. Medidas finales (caja del alfa, ancho×alto): sur 22×32, este 16×31, norte 20×32 con el aura (este/sur 0,73). Kaio-ken NO tiene imagen ni modelo propios en uso (la imagen de la semilla 3 tenía los antebrazos levantados y la cara ilegible: descartada a petición del coordinador). Sale de la base: python lote4/trabajo/kaioken_desde_base.py (pixelar.py sobre los MISMOS renders de la base con --alto 27, para que quepan el aura de 2 px y sus llamas; retoque_goku.py; y recolorea: gi naranja 12-24° sat≥0,88 → rojo vivo 2°; piel 10-35° sat 0,40-0,75 → rojiza más clara, 6°, sat×0,85, valor×1,06; pelo, camiseta y fajín azules, botas y cordones igual) y al final retoque_goku.py goku-kaioken --aura --sin-ojos; todo lo lanza el script). Variocolor nuevo: el gi rojo (tono 0-5°, sat≥0,86) → azul de GT; la piel (sat ~0,5), el aura (354°, sat 0,83) y el fajín no cambian. Si se rehacen los sprites de la base, hay que rehacer éstos. «perfil», «pixelar» e «imagen» son los de la base. 2.ª ronda (juez): perfil con claves nuevas «extiende» (el brazo avanza extiende×alto al ir hacia delante, el hombro acompaña: 0,16), «golpe_giro» (giro del tronco en el puñetazo ×1,5, para que de frente se lea más) y «tiro_ang» ([70, 105, 105, 50]: más de 90° junta las dos manos delante, Kamehameha). retoque_goku.py: en este/oeste la piel DENTRO del torso (el brazo cercano, que se leía como el escote de frente en «T») pasa al gi de su fila y la cara gana un ojo hacia delante (tres filas por encima de los hombros); --aura ahora es de 2 px (#F0283C y #FF6A70) con llamas de 1-3 px en la mitad de arriba (punta #FFB096), sin entrar en los huecos entre brazos y piernas, sin bajar de los pies y sin tocar las filas 0 ni la última; --dorado (Super Saiyan) aclara el pelo oliva de espaldas a la gama dorada. Medidor: python lote4/trabajo/sobresale.py <claves>. Medidas tras la 2.ª ronda del juez: Attack E +6 px; Shoot E +4 px (el personaje mide 27 en vez de 30); sur 22, este 16 con el aura (0,73).",
+ "perfil_3d": {
+  "ataque": "puñetazo",
+  "disparo": "brazo",
+  "arma": "ambas",
+  "arma_ataque": "derecha",
+  "elevacion": 12,
+  "cadera": 0.4,
+  "brazo_z": 0.46,
+  "pecho_z": 0.6,
+  "mano_x": 0.19,
+  "alza": 0.4,
+  "cabeza": 1.3,
+  "cuello": 0.78,
+  "fondo": 2.45,
+  "fondo_cabeza": 1.65,
+  "fondo_piernas": 1.7,
+  "extiende": 0.16,
+  "tiro_ang": [
+   70,
+   105,
+   105,
+   50
+  ],
+  "golpe_giro": 1.5
+ },
+ "pixelar_3d": {
+  "alto": 27,
+  "colores": 24,
+  "detalle": 0.25
+ },
+ "imagen_3d": {
+  "modelo": "lucid",
+  "semilla": 3,
+  "prompt": "@cf/leonardo/lucid-origin\nSon Goku from Dragon Ball Z (Cell and Buu saga), adult, in his normal base form, as a stylized 3D video game character figure. A muscular martial artist with natural jet-black spiky hair: big upward black spikes on top and back, three black bangs hanging on his forehead. Black eyes, friendly confident face, light peach skin. A bright orange martial arts gi top with short sleeves, open in a V at the chest, over a dark navy-blue short-sleeved undershirt; the orange gi is plain, without any symbol. A royal-blue sash belt tied at the waist with the ends hanging at the side. Baggy bright orange gi trousers. Royal-blue wristbands on both wrists. Dark navy-blue boots with a red trim at the top and yellow laces. Arms slightly apart from the body, empty open hands. Colors: only bright orange, dark navy blue, royal blue, jet-black hair, peach skin, a little red and yellow on the boots. Plain flat light green background. No aura, no tail. Full body visible from head to feet, standing upright facing the camera in a relaxed A-pose with the arms held a little away from the body and the legs slightly apart, front view, centered, the whole character inside the frame with margin, plain flat solid #9BE07A background, even soft studio lighting, no shadow on the ground, 3D render of a stylized video game character figure, clean readable silhouette, no text, no logo, no frame.",
+  "nota": "la de la base: Kaio-ken se recolorea de sus sprites"
+ },
+ "propias": {
+  "Attack": [
+   2,
+   2,
+   2,
+   2,
+   3,
+   3,
+   2,
+   2
+  ],
+  "Shoot": [
+   2,
+   3,
+   4,
+   4,
+   3,
+   4
+  ]
+ },
+ "limpias": "limpias",
+ "pj": {
+  "propias": {
+   "Attack": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    2,
+    2
+   ],
+   "Shoot": [
+    2,
+    3,
+    4,
+    4,
+    3,
+    4
+   ]
+  },
+  "limpias": "limpias"
+ }
+}

@@ -4,7 +4,10 @@
  *   - el nivel con el que empieza la run (1 a NIVEL_MAX);
  *   - hasta 4 ataques (los huecos de pl.maxMoves) de los que puede aprender: los de G.Moves.poolFor() del Pokémon y
  *     de sus evoluciones (G.EVO, que puede alcanzar dentro de la partida con js/systems/evo-partida.js), cada uno con
- *     su nivel de mejora (1 a def.maxLvl) y, al máximo, «evolucionado» si el ataque tiene evolución (G.Moves.EVO).
+ *     su nivel de mejora (1 a def.maxLvl) y, al máximo, «evolucionado» si el ataque tiene evolución (G.Moves.EVO);
+ *   - (20-11-2026, para las formas de Goku) «Empezar evolucionado en»: una de sus evoluciones (linea(): G.EVO, también
+ *     las formas del Multiverso, que no se pueden tener en la colección). Sólo en solitario, como el nivel: al empezar,
+ *     G.EvoPartida.evolucionar() (lo mismo que la carta dorada: sprite, vida, ataque, velocidad y tipos de esa forma).
  *
  * Quién lo ve y a quién se aplica: la misma condición que el menú de pruebas (G.DevMenu.permitido(): una sesión de la
  * nube, no invitado, cuyo uid tenga su huella en G.MODS.devHuellas). startRun es síncrono, así que al empezar se mira
@@ -36,7 +39,7 @@
  * hueco sigue funcionando (elige cuál sale destacado en el HUD) y borra los orbes, que reaparecen al momento; la Cinta
  * Elección (+40 % de daño) se aplica a todos. Cuenta para el ranking, como el resto del panel.
  *
- * Datos: save.inicioDev[dex] = { activo, nivel, ataques: [{ id, lvl, evo }] }. Va dentro de la partida, que se sube
+ * Datos: save.inicioDev[dex] = { activo, nivel, ataques: [{ id, lvl, evo }], forma } (forma: 0 o el dex de una evolución). Va dentro de la partida, que se sube
  * entera a la nube (firestore.rules sólo exige que `save` sea un mapa) y merge() de db.js se queda con la versión más
  * reciente: llega a los dos dispositivos de Nico. Se limpia al leerlo (normalizar): ids que no existen, repetidos,
  * niveles fuera de rango y más de 4 ataques se descartan.
@@ -94,7 +97,8 @@ G.InicioDev = (() => {
       const lvl = Math.max(1, Math.min(d.maxLvl, Math.floor(+a.lvl || 1)));
       ataques.push({ id: a.id, lvl, evo: !!a.evo && lvl === d.maxLvl && evolucionable(a.id) });
     }
-    return { activo: !!cfg.activo, nivel: Math.max(1, Math.min(NIVEL_MAX, Math.floor(+cfg.nivel || 1))), ataques };
+    const forma = +cfg.forma && +cfg.forma !== dex && linea(dex).includes(+cfg.forma) ? +cfg.forma : 0;   // MOD nico (20-11-2026)
+    return { activo: !!cfg.activo, nivel: Math.max(1, Math.min(NIVEL_MAX, Math.floor(+cfg.nivel || 1))), ataques, forma };
   }
 
   const leer = (save, dex) => normalizar(save && save.inicioDev && save.inicioDev[dex], dex);
@@ -122,6 +126,7 @@ G.InicioDev = (() => {
       pl.nivelInicioDev = cfg.nivel;   // para margenNivel (guard.js)
       pendientes = cfg.nivel - 1;
     }
+    if (!coop && cfg.forma && G.EvoPartida && G.DEX_BY[cfg.forma]) G.EvoPartida.evolucionar(pl, cfg.forma);   // empieza ya evolucionado
     return pendientes;
   }
 
@@ -163,7 +168,14 @@ G.InicioDev = (() => {
 
   function pintar(el, dex) {
     const mon = G.DEX_BY[dex];
-    const cfg = leer(G.DB.save, dex) || { activo: false, nivel: 1, ataques: [] };
+    const cfg = leer(G.DB.save, dex) || { activo: false, nivel: 1, ataques: [], forma: 0 };
+    const evos = linea(dex).slice(1);
+    const formas = evos.length ? `<div class="ini-nivel">
+        <label for="ini-forma">Empezar evolucionado en</label>
+        <select id="ini-forma" class="field"><option value="0">No (${esc(mon.name)})</option>${evos.map(d =>
+          `<option value="${d}"${cfg.forma === d ? ' selected' : ''}>${esc(G.DEX_BY[d].name)}</option>`).join('')}</select>
+        <span class="ini-nota">Sólo en solitario.</span>
+      </div>` : '';
     const todos = ataquesDe(dex).sort((a, b) => (a.de !== null) - (b.de !== null) || nombre(a.id).localeCompare(nombre(b.id), 'es'));
     const filas = [];
     for (let i = 0; i < HUECOS; i++) {
@@ -197,6 +209,7 @@ G.InicioDev = (() => {
         <input id="ini-nivel" class="field" type="number" min="1" max="${NIVEL_MAX}" step="1" inputmode="numeric" value="${cfg.nivel}">
         <span class="ini-nota">Las subidas salen como cartas al empezar.</span>
       </div>
+      ${formas}
       <div class="ini-ataques">${filas.join('')}</div>
       <div class="ini-pie">
         <span class="ini-nota">Sin ataques elegidos, empieza con el de siempre.</span>
@@ -212,7 +225,8 @@ G.InicioDev = (() => {
         const antes = cfg.ataques[i] && cfg.ataques[i].id === id;   // al cambiar de ataque, vuelve a nivel 1
         ataques.push(l === 'evo' && antes ? { id, lvl: d.maxLvl, evo: true } : { id, lvl: antes ? +l || 1 : 1, evo: false });
       }
-      return { activo: el.querySelector('#ini-on').checked, nivel: el.querySelector('#ini-nivel').value, ataques };
+      const fo = el.querySelector('#ini-forma');
+      return { activo: el.querySelector('#ini-on').checked, nivel: el.querySelector('#ini-nivel').value, ataques, forma: fo ? +fo.value : 0 };
     };
     const cambiar = (e, activar) => {
       const nuevo = leerForm();
@@ -232,6 +246,7 @@ G.InicioDev = (() => {
       if (G.Audio) G.Audio.sfx('select');
     };
     el.querySelector('#ini-nivel').onchange = e => cambiar(e, true);
+    if (el.querySelector('#ini-forma')) el.querySelector('#ini-forma').onchange = e => cambiar(e, true);
     el.querySelectorAll('.ini-mov, .ini-lvl').forEach(s => { s.onchange = e => cambiar(e, true); });
     el.querySelector('#ini-borrar').onclick = () => {
       guardar(dex, null);

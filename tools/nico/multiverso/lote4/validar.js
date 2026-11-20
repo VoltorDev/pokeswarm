@@ -6,7 +6,9 @@
  * inicial el primero, ids y nombres que no choquen con nada del juego ni de otra propuesta, cada ataque con los campos
  * de su forma y su daño nominal y alcance dentro del rango de los ataques Pokémon de esa forma (rangos.json), el
  * potenciador copiando los números de uno de upstream, `vis` que el juego sabe dibujar, evoluciones con lo que piden,
- * los textos en inglés, el variocolor, la descripción para la imagen y las fuentes. Sale con 1 si hay errores.
+ * los textos en inglés, el variocolor, la descripción para la imagen y las fuentes. Si la propuesta trae «formas»
+ * (evoluciones de especie en partida, como Goku → Goku Kaio-ken → Goku Super Saiyan), comprueba también cada una:
+ * dex libre, nombres, tipos, stats que suben, nivel creciente, mov/disparo, variocolor y sprite. Sale con 1 si hay errores.
  */
 'use strict';
 const fs = require('fs'), path = require('path');
@@ -95,25 +97,101 @@ function validar(clave) {
     }
   }
   // variocolor, imagen, fuentes y ficha
-  const V = p.variocolor;
-  req(V && typeof V.descripcion === 'string' && Array.isArray(V.reglas) && V.reglas.length >= 1, 'variocolor: { descripcion, reglas: [...] }');
-  if (V && Array.isArray(V.reglas)) for (const [i, r] of V.reglas.entries()) {
-    const si = r && r.si, a = r && r.a;
-    const rango = (x, lo, hi) => Array.isArray(x) && x.length === 2 && x.every(n => typeof n === 'number' && n >= lo && n <= hi);
-    if (!si || !a) { err.push(`variocolor.reglas[${i}]: { si: {h?, s?, v?}, a: {h?, s?, v?} }`); continue; }
-    if (si.h !== undefined && !rango(si.h, 0, 360)) err.push(`variocolor.reglas[${i}].si.h: [desde, hasta] en grados (0-360; si desde > hasta, da la vuelta por el 0)`);
-    for (const k of ['s', 'v']) if (si[k] !== undefined && !rango(si[k], 0, 1)) err.push(`variocolor.reglas[${i}].si.${k}: [mín, máx] entre 0 y 1`);
-    if (a.h !== undefined && !(typeof a.h === 'number' && a.h >= 0 && a.h <= 360)) err.push(`variocolor.reglas[${i}].a.h: el tono nuevo en grados`);
-    for (const k of ['s', 'v']) if (a[k] !== undefined && !(typeof a[k] === 'number' && a[k] >= 0 && a[k] <= 2)) err.push(`variocolor.reglas[${i}].a.${k}: multiplicador (0-2)`);
-  }
-  const S = p.sprite;
-  req(S && typeof S.prompt === 'string' && S.prompt.length >= 80 && /[a-z]/i.test(S.prompt), 'sprite.prompt: la descripción en inglés para FLUX (80+ letras)');
-  req(S && Array.isArray(S.rasgos) && S.rasgos.length >= 4, 'sprite.rasgos: 4+ rasgos que tiene que tener el sprite para reconocerlo (para la revisión)');
-  req(S && Array.isArray(S.paleta) && S.paleta.length >= 3 && S.paleta.every(c => /^#[0-9a-fA-F]{6}$/.test(c)), 'sprite.paleta: 3+ colores #rrggbb de su diseño');
+  validarVariocolor(p.variocolor, 'variocolor', err);
+  validarSprite(p.sprite, 'sprite', err, false);
+  if (p.sprite && p.sprite.fondo !== undefined && !/^#[0-9a-fA-F]{6}$/.test(p.sprite.fondo)) err.push('sprite.fondo: un color #rrggbb');
   req(Array.isArray(p.fuentes) && p.fuentes.length >= 3 && p.fuentes.every(f => /^https?:\/\//.test(f.url || '') && f.titulo), 'fuentes: 3+ { url, titulo, consulta }');
   req(typeof p.ficha_md === 'string' && p.ficha_md.length >= 2500 && /### Quién es/.test(p.ficha_md) && /### Ataques/.test(p.ficha_md) && /### Fuentes/.test(p.ficha_md),
     'ficha_md: la ficha completa en Markdown (2.500+ letras) con «### Quién es», «### Tipos…», «### Estadísticas…», «### Ataques», «### Variocolor» y «### Fuentes»');
+  // formas: evoluciones de especie dentro de la partida (G.EVO / G.EVO_NIVEL), con los mismos ataques que la base
+  if (p.formas !== undefined) validarFormas(p, otros, err, aviso);
   return { err, aviso, p };
+}
+
+function validarVariocolor(V, q, err) {
+  if (!(V && typeof V.descripcion === 'string' && V.descripcion.trim() && Array.isArray(V.reglas) && V.reglas.length >= 1)) { err.push(`${q}: { descripcion, reglas: [...] }`); return; }
+  const rango = (x, lo, hi) => Array.isArray(x) && x.length === 2 && x.every(n => typeof n === 'number' && n >= lo && n <= hi);
+  for (const [i, r] of V.reglas.entries()) {
+    const si = r && r.si, a = r && r.a;
+    if (!si || !a) { err.push(`${q}.reglas[${i}]: { si: {h?, s?, v?}, a: {h?, s?, v?} }`); continue; }
+    if (si.h !== undefined && !rango(si.h, 0, 360)) err.push(`${q}.reglas[${i}].si.h: [desde, hasta] en grados (0-360; si desde > hasta, da la vuelta por el 0)`);
+    for (const k of ['s', 'v']) if (si[k] !== undefined && !rango(si[k], 0, 1)) err.push(`${q}.reglas[${i}].si.${k}: [mín, máx] entre 0 y 1`);
+    if (a.h !== undefined && !(typeof a.h === 'number' && a.h >= 0 && a.h <= 360)) err.push(`${q}.reglas[${i}].a.h: el tono nuevo en grados`);
+    for (const k of ['s', 'v']) if (a[k] !== undefined && !(typeof a[k] === 'number' && a[k] >= 0 && a[k] <= 2)) err.push(`${q}.reglas[${i}].a.${k}: multiplicador (0-2)`);
+  }
+}
+
+function validarSprite(S, q, err, conFondo) {
+  if (!(S && typeof S.prompt === 'string' && S.prompt.length >= 80 && /[a-z]/i.test(S.prompt))) err.push(`${q}.prompt: la descripción en inglés para FLUX (80+ letras)`);
+  if (conFondo && !(S && /^#[0-9a-fA-F]{6}$/.test(S.fondo || ''))) err.push(`${q}.fondo: el color liso del fondo, #rrggbb (uno que el personaje no lleve)`);
+  if (!(S && Array.isArray(S.rasgos) && S.rasgos.length >= 4)) err.push(`${q}.rasgos: 4+ rasgos que tiene que tener el sprite para reconocerlo (para la revisión)`);
+  if (!(S && Array.isArray(S.paleta) && S.paleta.length >= 3 && S.paleta.every(c => /^#[0-9a-fA-F]{6}$/.test(c)))) err.push(`${q}.paleta: 3+ colores #rrggbb de su diseño`);
+}
+
+/** Los números de especie que ya usa el juego (pokedex.js y multiverso.js), para que una forma no pise ninguno. */
+let DEX_JUEGO = null;
+function dexDelJuego() {
+  if (DEX_JUEGO) return DEX_JUEGO;
+  DEX_JUEGO = new Set();
+  const datos = path.join(__dirname, '..', '..', '..', '..', 'js', 'data');
+  for (const [f, re] of [['pokedex.js', /"dex":\s*(\d+)/g], ['multiverso.js', /\bdex:\s*(\d+)/g]]) {
+    // Lo que integrar.js ya metió del lote (entre <lote4> y </lote4>) no cuenta como «del juego»: así se puede repetir.
+    try { const t = fs.readFileSync(path.join(datos, f), 'utf8').replace(/\/\/ <lote4>[\s\S]*?\/\/ <\/lote4>/g, ''); let m; while ((m = re.exec(t))) DEX_JUEGO.add(+m[1]); } catch (e) { /* sin el fichero, sólo se comprueba el lote */ }
+  }
+  return DEX_JUEGO;
+}
+
+const CAMPOS_FORMA = ['dex', 'nombre', 'nombreEn', 'types', 'hp', 'spd', 'atk', 'bst', 'rarity', 'leg', 'nivel', 'mov', 'disparo', 'version', 'variocolor', 'sprite'];
+
+function validarFormas(p, otros, err, aviso) {
+  const F = p.formas;
+  if (!Array.isArray(F) || F.length < 1 || F.length > 3) { err.push(`formas: lista de 1 a 3 formas, cada una { ${CAMPOS_FORMA.join(', ')} }`); return; }
+  const dexRoster = new Set(ROSTER.personajes.map(x => x.dex));
+  const formasDe = o => (Array.isArray(o.formas) ? o.formas : []);
+  const dexOtras = new Set(otros.flatMap(o => formasDe(o).map(f => f.dex)));
+  const nombresOtros = new Set(otros.flatMap(o => [o.nombre].concat(formasDe(o).map(f => f.nombre))));
+  const juego = dexDelJuego();
+  const vistos = new Set([p.dex]), nombres = new Set([p.nombre]);
+  let prev = { nombre: p.nombre, hp: p.hp, spd: p.spd, atk: p.atk, bst: p.bst, nivel: 0 };
+  for (const [i, f] of F.entries()) {
+    const q = `formas[${i}]${f && f.nombre ? ' (' + f.nombre + ')' : ''}`;
+    if (!f || typeof f !== 'object') { err.push(`${q}: un objeto`); continue; }
+    if (!(Number.isInteger(f.dex) && f.dex >= 10030 && f.dex <= 10099)) err.push(`${q}: dex entero entre 10030 y 10099 (los del roster acaban en 10029)`);
+    else {
+      if (vistos.has(f.dex)) err.push(`${q}: dex ${f.dex} repetido (la base u otra forma)`);
+      if (dexRoster.has(f.dex)) err.push(`${q}: dex ${f.dex} es de otro personaje del lote`);
+      if (juego.has(f.dex)) err.push(`${q}: dex ${f.dex} ya existe en el juego`);
+      if (dexOtras.has(f.dex)) err.push(`${q}: dex ${f.dex} ya lo usa una forma de otra propuesta`);
+      vistos.add(f.dex);
+    }
+    for (const k of ['nombre', 'nombreEn', 'version']) if (!(typeof f[k] === 'string' && f[k].trim())) err.push(`${q}: falta ${k} (texto)`);
+    if (f.nombre) {
+      if (nombres.has(f.nombre)) err.push(`${q}: nombre repetido con la base u otra forma`);
+      if (nombresOtros.has(f.nombre)) err.push(`${q}: el nombre «${f.nombre}» ya lo usa otra propuesta`);
+      nombres.add(f.nombre);
+    }
+    if (!(Array.isArray(f.types) && f.types.length >= 1 && f.types.length <= 2 && f.types.every(t => R.tipos.includes(t)) && new Set(f.types).size === f.types.length))
+      err.push(`${q}: types, 1 o 2 de ${R.tipos.join(', ')}`);
+    if (!(Number.isInteger(f.hp) && f.hp >= 88 && f.hp <= 130)) err.push(`${q}: hp entero entre 88 y 130 (Mewtwo 118, Arceus 124)`);
+    if (!(Number.isInteger(f.spd) && f.spd >= 90 && f.spd <= 140)) err.push(`${q}: spd entero entre 90 y 140 (Mewtwo 133)`);
+    if (!(typeof f.atk === 'number' && f.atk >= 1.0 && f.atk <= 1.65)) err.push(`${q}: atk entre 1.0 y 1.65 (Mewtwo 1.55)`);
+    if (!(Number.isInteger(f.bst) && f.bst >= 395 && f.bst <= 720)) err.push(`${q}: bst entero entre 395 y 720 (Arceus 720)`);
+    if (!(Number.isInteger(f.rarity) && f.rarity >= 1 && f.rarity <= 5)) err.push(`${q}: rarity entero de 1 a 5`);
+    if (f.leg !== undefined && typeof f.leg !== 'boolean') err.push(`${q}: leg, si va, true o false`);
+    if (f.leg === true) aviso.push(`${q}: con leg: true saldría como jefe en las grietas (rift.js) y tendría logro propio`);
+    for (const k of ['hp', 'spd', 'atk', 'bst']) if (typeof f[k] === 'number' && typeof prev[k] === 'number' && !(f[k] > prev[k]))
+      err.push(`${q}: ${k} ${f[k]} tiene que subir respecto a ${prev.nombre} (${prev[k]})`);
+    if (!(Number.isInteger(f.nivel) && f.nivel >= 2 && f.nivel <= 100)) err.push(`${q}: nivel, el nivel real de evolución (G.EVO_NIVEL), entero de 2 a 100 (en partida, ×0,5 hacia arriba)`);
+    else if (!(f.nivel > prev.nivel)) err.push(`${q}: nivel ${f.nivel} tiene que ser mayor que el de la forma anterior (${prev.nivel})`);
+    if (!MOV.includes(f.mov)) err.push(`${q}: mov, uno de ${MOV.join(', ')}`);
+    if (f.disparo !== 1 && f.disparo !== -1) err.push(`${q}: disparo, 1 o -1`);
+    validarVariocolor(f.variocolor, `${q}.variocolor`, err);
+    validarSprite(f.sprite, `${q}.sprite`, err, true);
+    const sobran = Object.keys(f).filter(k => !CAMPOS_FORMA.includes(k));
+    if (sobran.length) err.push(`${q}: campos que una forma no lleva: ${sobran.join(', ')} (los ataques son los de la base)`);
+    prev = { nombre: f.nombre || q, hp: f.hp, spd: f.spd, atk: f.atk, bst: f.bst, nivel: Number.isInteger(f.nivel) ? f.nivel : prev.nivel };
+  }
+  if (typeof p.ficha_md === 'string' && !/### Formas/.test(p.ficha_md)) err.push('ficha_md: con formas, la ficha lleva «### Formas» (cada forma, por qué, stats, nivel y variocolor)');
 }
 
 const arg = process.argv[2];

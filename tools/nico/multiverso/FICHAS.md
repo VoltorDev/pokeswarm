@@ -2102,3 +2102,448 @@ ataque, evoluciona el Pokémon. No reciben daño (no hay vida que sincronizar en
 Nombres: los de los Pokémon, oficiales; «Gigavoltio Destructor» es el movimiento Z de Pikachu en la versión española
 de Sol y Luna; «Escuadra Squirtle» y «¡Nunca me rindo!» son míos (el doblaje dice «Escuadrón Squirtle» en algunos
 episodios: sin comprobar). Variocolor: la gorra azul. Sprite sin PixelLab (FLUX → TRELLIS.2 → rotar3d.py → pixelar.py).
+
+<!-- lote4 -->
+# Cuarto lote (14-11-2026)
+
+Petición de Nico (14-11-2026): «empieza a dejar los 13 personajes preparados», los del punto 21 de PLAN.md, con Scorpion y Sub-Zero los dos (14). Cada ficha la escribió un agente estudiando su saga; otro la verificó buscándole fallos (fidelidad al universo y diseño de juego) y un tercero aplicó lo confirmado; al final, un crítico miró el plantel entero (reparto de tipos, mecánicas repetidas, rivales). Los datos de cada uno están en `lote4/propuestas/<clave>.json` (con su descripción para la imagen y el variocolor), comprobados por `lote4/validar.js` con los mismos rangos que `check.js` §24.
+
+Integrados en el juego hasta ahora (`lote4/integrar.js`): 1 de 14, Goku.
+
+| N.º | Personaje | Saga | Tipos | Vida / velocidad / ataque | Ataque inicial |
+|---|---|---|---|---|---|
+| 10018 | Goku (en la partida evoluciona en Goku Kaio-ken, 10030, y en Goku Super Saiyan, 10031) | Dragon Ball (manga de Akira Toriyama en Weekly Shōnen Jump desde 1984; anime de Toei Animation: Dragon Ball, Dragon Ball Z, Dragon Ball GT y Dragon Ball Super; videojuegos de Bandai Namco) | Lucha / Psíquico | 108 / 112 / ×1,16 | Kamehameha |
+
+## 10018 · Goku (y sus formas: 10030 Goku Kaio-ken y 10031 Goku Super Saiyan)
+
+Ficha de estudio del 20-11-2026, para el cuarto lote del Multiverso, con el formato de las de Kratos y el Jefe Maestro. Goku ganó la votación de los jugadores (recuento de Firestore leído el 20-11-2026) y es el primero del lote que se monta. De los demás sólo está escrita la de Sub-Zero (10026); si cambian los tipos de los otros, hay que revisar «En el conjunto».
+
+Rehecha el mismo día con las decisiones de Nico: Goku tiene **tres formas que son evoluciones de especie**, como Charmander → Charmeleon → Charizard (Goku → Goku Kaio-ken → Goku Super Saiyan; ver «Formas»); sólo el Super Saiyan supera a Mewtwo; los ataques llevan nombres en español (el inicial sigue siendo «Kamehameha»); el Kaio-ken deja de ser un ataque, y cada forma lleva su variocolor.
+
+**Saga:** Dragon Ball (manga de Akira Toriyama en Weekly Shōnen Jump desde 1984; anime de Toei Animation: Dragon Ball, Dragon Ball Z, Dragon Ball GT y Dragon Ball Super; videojuegos de Bandai Namco)
+
+**Versión (forma base):** Son Goku adulto de Dragon Ball Z, en las sagas de Cell y de Boo, con el gi naranja sin kanji: camiseta interior azul marino de manga corta, fajín azul, muñequeras azules y botas azul oscuro con ribete rojo y cordones amarillos (wiki de Dragon Ball); pelo negro en punta. El repertorio sale de toda la saga, como el de Kratos: de Dragon Ball (el Kamehameha, el Bastón Mágico y la Judía Mágica), de Dragon Ball Z (Fuerza Universal, Transmisión Instantánea, Onda Explosiva) y de las películas y Dragon Ball GT (Puño del Dragón).
+
+**Por qué este y no otro:**
+- **A 32 px se reconoce mejor.** El gi naranja con el azul marino debajo y el pelo negro en picos es la imagen de Goku desde Dragon Ball Z y la que llevan casi todos sus videojuegos. Naranja ya hay (Agumon, y Crash en este lote); lo que lo distingue es la mezcla de naranja, azul marino y pelo negro en picos, que no tiene nadie más.
+- **El gi de las sagas de Cell y de Boo, y no el de Namek:** es el mismo naranja, pero sin los kanji del pecho y la espalda, que a 32 px sólo serían un punto blanco que ensucia. Es también el que lleva en casi todo Dragon Ball Super (wiki).
+- **Goku niño (Dragon Ball):** gi azul o rojo, bastón y cola. Es otra silueta, más pequeña, y la mayoría de los jugadores lo conocen de adulto.
+- **Super Saiyan como base:** ahora no hace falta elegir. El Goku normal es la forma base y el Super Saiyan, su última evolución dentro de la partida, con su propio dibujo (ver «Formas»).
+- **Dragon Ball GT (gi azul) o Ultra Instinto (pelo plateado):** menos conocidos o de una sola temporada. El gi azul de GT queda como variocolor de la forma base.
+
+**Nombre:** «Goku» a secas, como lo llaman todos sus amigos y como sale en los videojuegos en España. Su nombre completo es Son Goku, y su nombre saiyano, Kakarot. En la colección va como `name: 'Goku'`; las formas, como «Goku Kaio-ken» y «Goku Super Saiyan».
+
+### Quién es
+
+Goku es el protagonista de Dragon Ball, creado por Akira Toriyama. Debutó en el primer capítulo del manga, en Weekly Shōnen Jump, el 3 de diciembre de 1984 (Wikipedia). Toriyama lo basó en Sun Wukong, el Rey Mono de la novela china *Viaje al Oeste*, y en las películas de artes marciales de Hong Kong de Bruce Lee y Jackie Chan. De ahí salen su nombre (Son Goku es la lectura japonesa de Sun Wukong), su nube voladora (Kinton) y su bastón que se alarga (Nyoibō), que en la novela son del Rey Mono.
+
+Es un saiyano, un pueblo de guerreros de otro planeta. Nació como Kakarot en el planeta Vegeta y lo mandaron a la Tierra de bebé. Lo crio un anciano, el abuelo Gohan, que le puso el nombre de Goku. Un golpe en la cabeza le borró la misión de conquistar la Tierra, y creció bueno, ingenuo y con un hambre enorme, de comida y de pelea.
+
+Lo que lo mueve es hacerse más fuerte y enfrentarse a rivales cada vez más poderosos. Entrena con el Maestro Roshi (la Escuela Tortuga), con Kami-sama y con el Kaio del Norte, y en cada saga aprende una técnica nueva que se convierte en su seña: el Kamehameha de Roshi, el Kaio-ken y la Genkidama (en España, Fuerza Universal y otros nombres) del Kaio del Norte y la Transmisión Instantánea de los habitantes de Yardrat. Su estilo mezcla artes marciales de Asia oriental, como el kárate y el wing chun (Wikipedia).
+
+**Lo que importa para el juego:** cómo pelea y cómo crece.
+- **Es un luchador cuerpo a cuerpo** que remata con golpes enormes (el Puño del Dragón) y se mueve más rápido de lo que el rival ve (la Transmisión Instantánea).
+- **Dispara energía (ki).** El Kamehameha es su ataque de siempre: un rayo recto, ancho y lejano. La Fuerza Universal es su último recurso: una bola gigante que tarda en cargar.
+- **Se transforma.** El Kaio-ken multiplica su fuerza por 2, 3, 10 o 20 a costa de su cuerpo, y el Super Saiyan le pone el pelo dorado y lo hace mucho más fuerte. En PokéSwarm, las dos son **evoluciones de especie dentro de la partida**: el Goku que empieza la partida se convierte en Goku Kaio-ken y luego en Goku Super Saiyan, como un inicial de tres fases.
+
+En PokéSwarm eso da un luchador rápido y fuerte, que pega en todas las distancias (un rayo largo, una bola que cae cerca, un golpe cuerpo a cuerpo, una embestida y una onda alrededor), se cura comiendo una judía y, si la partida dura, acaba siendo de lo más fuerte del juego.
+
+Se quedan fuera la nube Kinton (es un vehículo, no ataca), el Taiyoken (es de la Escuela Grulla: lo creó Tsuru-Sen'nin y lo estrena Tenshinhan; en el juego sólo cegaría), el Zanzoken (la Ilusión de Imagen: esquivar no es un ataque) y el Ultra Instinto (un estado de otra época, que pediría una cuarta forma).
+
+### Tipos: Lucha / Psíquico
+
+Son los de la forma base. Las formas cambian el segundo tipo (Kaio-ken, Lucha/Fuego; Super Saiyan, Lucha/Dragón: ver «Formas»).
+
+**Lucha:** es un artista marcial, el protagonista del manga de peleas más famoso, y su fuerza sale de entrenar. Su Kamehameha nace en una escuela de artes marciales, y los ataques de energía de los luchadores son de Lucha en Pokémon (Esfera Aural, Onda Certera).
+
+**Psíquico:** su poder no es sólo músculo: es ki, la energía interior que concentra con la mente. Siente la energía de los demás a distancia, se teletransporta concentrándose con dos dedos en la frente y reúne la energía de todos los seres vivos en la Fuerza Universal. En Pokémon hay un precedente claro: Medicham, el Pokémon que medita, es Lucha/Psíquico, y siente el aura y tiene poderes psíquicos gracias a la meditación (Bulbapedia).
+
+**Defensa** (tabla suavizada de `types.js`):
+- Débil a Volador, Fantasma y Hada (×1,6).
+- Resiste Lucha y Roca (×0,6).
+- Psíquico, Bicho y Siniestro le hacen un daño casi neutro (×0,96): lo que es eficaz contra uno de sus tipos lo aguanta el otro.
+
+Tres debilidades y dos resistencias: un tipo equilibrado, que va con su perfil de todoterreno.
+
+**Cobertura:** Lucha pega fuerte a Normal, Hielo, Roca, Siniestro y Acero, pero flojo a Veneno, Volador, Psíquico, Bicho y Hada, y casi nada a Fantasma (×0,3). El Psíquico tapa parte de esos huecos: pega fuerte a Veneno (y a Lucha). Por eso lleva tres ataques de Psíquico y dos de Lucha, el Bastón Mágico, de Normal, como golpe neutro, y el potenciador, de Planta (una judía). En el juego no hay bonificación por atacar con un tipo propio, así que el cambio de tipos al evolucionar sólo cambia cómo encaja los golpes; los ataques son los mismos.
+
+**En el conjunto:** Lucha la tienen ya el Doom Slayer, el Jefe Maestro y Kratos, y en las propuestas del lote también Sub-Zero y, en la inicial, Donkey Kong. Con Goku serían 6 de 29. Lo mantengo porque es lo que define a Goku, y cada uno lleva un segundo tipo distinto (Acero, Roca, Fuego, Hielo y Psíquico). Psíquico, en cambio, sólo lo tiene el Ojo de Cthulhu (y Geralt en su propuesta inicial), así que la pareja Lucha/Psíquico no la repite nadie. La de Goku Kaio-ken (Lucha/Fuego) sí repite la de Kratos, pero es una forma que sólo se ve en partida.
+
+**Alternativas descartadas:**
+- **Lucha sola:** la más fiel al «luchador», pero con un solo tipo es débil a Volador, Psíquico y Hada y sólo resiste a Bicho, Roca y Siniestro; además se queda sin nada que lo distinga de los demás de Lucha. Es mi segunda opción.
+- **Lucha/Volador**, porque vuela (la técnica Bukū-jutsu): vuela casi todo el reparto de Dragon Ball, no es algo suyo, y Volador lo tiene ya Kirby.
+- **Lucha/Normal:** no aporta cobertura (Normal no pega fuerte a nada) y dice poco del ki.
+
+### Estadísticas: vida 108, velocidad 112, ataque ×1,16
+
+Son las de la forma base, la que sale en el banner y con la que empieza la partida. Las formas suben desde aquí (ver «Formas»).
+
+Perfil: el luchador todoterreno, rápido y con pegada, sin ser un tanque.
+
+- **Vida 108, en la media:** aguanta palizas enormes y se recupera (las judías mágicas), pero no es un muro como el Cacodemonio (126), el Jefe Maestro (122) o Kratos (120). Como Kirby y Ash (Johto) (108), algo menos que Link (110).
+- **Velocidad 112, de las altas:** es de los más rápidos de su mundo y se mueve a ráfagas con la Transmisión Instantánea. Como Agumon y Ash (112); más lento que el Doom Slayer (116), el Ojo de Cthulhu (117) y Pac-Man (118).
+- **Ataque ×1,16:** el héroe más fuerte de su saga. Pega como Kratos y Blinky (×1,16), algo menos que el Doom Slayer (×1,18) y Drácula (×1,20), y más que Link y Kirby (×1,12).
+- **bst 430**, como Kratos: es el protagonista de su saga.
+
+Los stats base equivalentes, con la fórmula de `tools/fetch_pokedex.py` (vida = 70 + PS × 0,45; velocidad = 78 + Vel × 0,42; ataque = 0,70 + máx(Atq, AtqEsp) / 100 × 0,55), son PS 84, Ataque 84, Defensa 58, Ataque Especial 75, Defensa Especial 48 y Velocidad 81. Suman 430 y dan 108 (70 + 84 × 0,45 = 107,8), 112 (78 + 81 × 0,42 = 112,02) y ×1,16 (0,70 + 0,84 × 0,55 = 1,162). Manda el Ataque: es un luchador antes que un lanzador de energía. Rareza 2, como todos los del Multiverso.
+
+| Personaje | Vida | Velocidad | Ataque | bst |
+|---|---|---|---|---|
+| Kratos | 120 | 102 | ×1,16 | 430 |
+| Link | 110 | 108 | ×1,12 | 415 |
+| **Goku** | **108** | **112** | **×1,16** | **430** |
+| Doom Slayer | 104 | 116 | ×1,18 | 425 |
+| Agumon | 96 | 112 | ×1,14 | — |
+
+Entrada de `PERSONAJES`:
+
+```js
+{ dex: 10018, name: 'Goku', types: ['fighting', 'psychic'], hp: 108, spd: 112, atk: 1.16, rarity: 2, bst: 430,
+  starter: false, gen: GEN, mv: true, start: 'kamehameha', serie: 'Dragon Ball',
+  pool: ['kamehameha', 'transmision-instantanea', 'fuerza-universal', 'puno-del-dragon', 'baston-magico', 'grito-de-combate', 'judia-magica'] },
+```
+
+### Formas
+
+Decisión de Nico (20-11-2026): Goku evoluciona dentro de la partida como un inicial de tres fases. **Goku (10018) → Goku Kaio-ken (10030) → Goku Super Saiyan (10031).** Es el sistema de `js/systems/evo-partida.js` (`G.EvoPartida`): al subir de nivel, si ya puede, sale la carta dorada «Evolucionar en X»; si la eliges, hasta el final de esa partida cambian el sprite, la vida, la velocidad, el ataque y los tipos, y **se conservan los ataques**, el nivel, las cartas cogidas y las mejoras. Por eso las tres formas comparten los mismos siete ataques. El nivel de la carta es el real de `G.EVO_NIVEL` × 0,5 hacia arriba (`evoNivelFactor`).
+
+| Forma | N.º | Tipos | Vida | Velocidad | Ataque | bst | Rareza | Nivel real → en partida | Variocolor |
+|---|---|---|---|---|---|---|---|---|---|
+| Goku | 10018 | Lucha / Psíquico | 108 | 112 | ×1,16 | 430 | 2 | — (la base) | gi azul de Dragon Ball GT |
+| Goku Kaio-ken | 10030 | Lucha / Fuego | 112 | 124 | ×1,32 | 535 | 4 | 16 → 8 | Kaio-ken con el gi azul de GT |
+| Goku Super Saiyan | 10031 | Lucha / Dragón | 122 | 136 | ×1,58 | 690 | 5 | 40 → 20 | Supersaiyano Azul (pelo azul) |
+
+La carta de evolución lo dirá así: «Vida 108 → 112, ataque ×1,16 → ×1,32, velocidad 112 → 124» y, después, «Vida 112 → 122, ataque ×1,32 → ×1,58, velocidad 124 → 136».
+
+**Cómo escalan, y por qué así.** La forma base está en el rango del Multiverso (vida 88-128, velocidad 90-120, ataque ×1,05-×1,20, bst 395-435), porque es la que sale en el banner. El Kaio-ken escala como la segunda fase de un inicial y el Super Saiyan es lo único que supera a Mewtwo, y sólo «algo» (decisión de Nico):
+
+| Referencia | Vida | Velocidad | Ataque | bst | Rareza |
+|---|---|---|---|---|---|
+| Charmeleon | 96 | 112 | ×1,14 | 405 | 2 |
+| Gallade | 101 | 112 | ×1,39 | 518 | — |
+| Lucario | 102 | 116 | ×1,33 | 525 | 4 |
+| Charizard | 105 | 120 | ×1,30 | 534 | 4 |
+| **Goku Kaio-ken** | **112** | **124** | **×1,32** | **535** | **4** |
+| Rayquaza | 117 | 118 | ×1,52 | 680 | 5 |
+| Mewtwo | 118 | 133 | ×1,55 | 680 | 5 |
+| **Goku Super Saiyan** | **122** | **136** | **×1,58** | **690** | **5** |
+| Arceus | 124 | 128 | ×1,36 | 720 | 5 |
+
+Las tres formas se calculan con la misma fórmula de `tools/fetch_pokedex.py` que la base, desde unos stats base inventados por mí (no son de ningún juego); así los números son coherentes con los de los Pokémon. La rareza sale de la regla de ese mismo script (bst de 495 a 579, 4; de 580 en adelante, 5), salvo la base, que lleva el 2 de todo el Multiverso.
+
+#### Goku Kaio-ken (10030)
+
+**Qué es:** el Kaio-ken, la técnica que le enseña el Kaio del Norte en Dragon Ball Z. Multiplica durante un instante su poder y su velocidad (el doble, el triple, por diez, por veinte) a costa de dañar su cuerpo si se pasa. Al activarlo le sale un aura roja de fuego y todo su cuerpo y su ropa toman un tono rojizo (wiki de Dragon Ball). Es la primera gran subida de poder de Goku, contra Vegeta en la saga de los saiyanos: la segunda fase natural.
+
+**Versión:** el mismo Goku adulto del gi naranja de la forma base, con el aura roja de fuego pegada al cuerpo y el gi, la piel y el pelo teñidos de rojo. Así la evolución se lee al instante: el mismo muñeco, en rojo.
+
+**Tipos: Lucha / Fuego.** El aura del Kaio-ken es roja y de fuego, y la técnica quema su propio cuerpo; el Fuego dice las dos cosas. Defensa (tabla suavizada de `types.js`): débil a Volador, Psíquico, Tierra y Agua (×1,6); resiste Fuego, Planta, Hielo, Siniestro y Acero (×0,6) y sobre todo Bicho (×0,36); Roca y Hada le hacen casi neutro (×0,96). Repite la pareja de Kratos, pero sólo existe dentro de la partida y por unos niveles. Otra opción era seguir en Lucha/Psíquico; la descarto porque Nico quiere que la evolución se note también en los tipos.
+
+**Estadísticas: vida 112, velocidad 124, ataque ×1,32, bst 535, rareza 4.** Stats base: PS 93, Ataque 113, Defensa 68, Ataque Especial 95, Defensa Especial 56, Velocidad 110 (suman 535). Dan vida 70 + 93 × 0,45 = 111,85 → 112; velocidad 78 + 110 × 0,42 = 124,2 → 124; ataque 0,70 + 1,13 × 0,55 = 1,32. Es una segunda fase con la potencia de una tercera, entre Lucario y Charizard en total (525 y 534), pero repartida a su manera: **lo que más sube es la velocidad** (+12, frente a +4 de vida), porque el Kaio-ken es lo que le deja alcanzar a Vegeta y a Freezer; el ataque sube a ×1,32, como Lucario (×1,33) y Charizard (×1,30). La vida casi no sube (+4), porque la técnica le destroza el cuerpo. Rareza 4 por la regla del bst, como Charizard y Lucario.
+
+**Nivel: 16 (en partida, 8).** El de la segunda fase de casi todos los iniciales (Charmander, Squirtle, Bulbasaur: 16), porque es su primera transformación de poder.
+
+**Mov y disparo:** `anda` y `1`, como la base: es el mismo cuerpo.
+
+**Variocolor: Kaio-ken con el gi azul de Dragon Ball GT.** El mismo cambio que el variocolor de la base (el gi pasa a azul), sobre el sprite del Kaio-ken: el gi, que en esta forma es rojo anaranjado, pasa a azul, y el aura roja, la piel rojiza y el pelo se quedan. Así un Goku variocolor sigue siéndolo al evolucionar (el juego conserva el shiny al cambiar de forma). En la saga, el Goku de GT lleva un gi azul que recuerda al primero que tuvo de niño (wiki de Dragon Ball, página «Gi»), y en el videojuego *Dragon Ball Fusions* el Goku de GT (niño) usa el Kaio-ken máximo (página del Kaio-ken del wiki en inglés). **Es la más floja de las tres justificaciones:** en el anime de GT no he visto que Goku adulto use el Kaio-ken con ese gi.
+
+Regla: el rojo anaranjado del gi (tono 8-40°, saturación de 0,60 o más, valor de 0,25 o más) pasa a azul (tono 215°), con la saturación ×0,9 y el brillo ×0,85. Con la paleta de prueba: #E5532E → #3771C3; sombra #A8331C → #24508F; luz #FF8A5C → #5C90D9. El aura (#F0283C, tono 354°), la piel rojiza (#F0A08A, saturación 0,43), el pelo con brillo rojo (tono 351-354°), el fajín violeta y los cordones amarillos (tono 45°) no cambian. **Riesgo:** el gi y el aura sólo se separan por el tono (12° frente a 354°); si FLUX pinta el gi rojo puro, la regla no lo coge, y si pinta el aura naranja, la tiñe. Hay que medirlo en la hoja real.
+
+**Imagen (FLUX):** fondo verde claro (`#9BE07A`), que no lleva. El prompt pide el aura pegada al cuerpo, para que la silueta no se convierta en una mancha a 32 px ni moleste a la reconstrucción 3D. Rasgos para la revisión: pelo negro en picos con brillo rojo; aura roja de fuego pegada al cuerpo; gi rojo anaranjado; piel rojiza; camiseta interior oscura, color ciruela; fajín y muñequeras violeta azulado; botas oscuras con ribete rojo; cara decidida y ojos negros.
+
+#### Goku Super Saiyan (10031)
+
+**Qué es:** el Super Saiyan, la transformación legendaria de los saiyanos, que Goku alcanza en Namek por la ira de ver morir a Krilin a manos de Freezer. El pelo se le eriza y se vuelve rubio, los ojos pasan a azul verdoso o turquesa, los músculos crecen un poco y le envuelve un aura dorada (wiki de Dragon Ball en español, página «Supersaiyano»). En el doblaje de España de los noventa se llamaba «Super Guerrero» (Sensacine), y el wiki en español lo titula «Supersaiyano». **La forma se llama «Goku Super Saiyan»** porque es como lo conoce todo el mundo y como sale en los videojuegos; «Super Guerrero» queda como dato.
+
+**Versión:** Goku adulto en Super Saiyan con el gi naranja de las sagas de Cell y de Boo (el mismo de la base), pelo dorado en punta hacia arriba, cejas doradas y ojos verde azulado. Sin aura, para que lo que lo distinga a 32 px sea el pelo dorado sobre el naranja.
+
+**Tipos: Lucha / Dragón.** En Pokémon, el Dragón es el tipo de las criaturas de poder legendario (Rayquaza, Dragonite, Garchomp), y el Super Saiyan es una leyenda de su pueblo: según el mito saiyano, hace mil años apareció un guerrero con un poder inimaginable (wiki en español). Además, Goku crea el Puño del Dragón en Super Saiyan (en Super Saiyan 3). Defensa (tabla suavizada de `types.js`): débil a Volador, Psíquico, Hielo y Dragón (×1,6) y sobre todo a Hada (×2,4, porque lo es de los dos tipos); resiste Fuego, Agua, Planta, Eléctrico, Bicho, Roca y Siniestro (×0,6). Es la forma más fuerte y la más expuesta al Hada. Otras opciones: **Lucha/Eléctrico** por el aura dorada (pero los rayos alrededor del cuerpo son del Super Saiyan 2) o **seguir en Lucha/Psíquico**. Es una de las dudas para Nico.
+
+**Estadísticas: vida 122, velocidad 136, ataque ×1,58, bst 690, rareza 5.** Stats base: PS 116, Ataque 160, Defensa 76, Ataque Especial 130, Defensa Especial 70, Velocidad 138 (suman 690). Dan vida 70 + 116 × 0,45 = 122,2 → 122; velocidad 78 + 138 × 0,42 = 135,96 → 136; ataque 0,70 + 1,60 × 0,55 = 1,58. Mewtwo da 118, 133 y ×1,55 (PS 106, Velocidad 130, Ataque Especial 154; bst 680). El Super Saiyan le saca **+4 de vida, +3 de velocidad, +0,03 de ataque y +10 de bst: algo más alto, como pidió Nico**, sin llegar al total de Arceus (720). En cambio sus defensas (76 y 70) son más bajas que las de Mewtwo (90 y 90): un luchador que lo apuesta todo al ataque. El juego no usa las defensas, pero así el bst queda justificado. Rareza 5 por la regla del bst. **Sin `leg`:** no es una especie legendaria, y con `leg: true` saldría como jefe en las grietas (`rift.js`) y tendría su logro «Vence a…» (`achievements.js`).
+
+**Nivel: 40 (en partida, 20).** Algo más tarde que Charizard (36 → 18), porque es lo más fuerte de su línea y supera a Mewtwo: dos niveles de partida más que el último paso de un inicial. A nivel 20 de partida también evolucionan las especies que no lo hacen por nivel (`evoNivelSinNivel`).
+
+**Mov y disparo:** `anda` y `1`, como las otras dos. En la saga vuela, pero con `flota` el sprite cambiaría de forma de moverse al evolucionar.
+
+**Variocolor: Supersaiyano Azul** (Super Saiyan Blue; en el wiki en español, Supersaiyano Dios Supersaiyano o Supersaiyano Azul), de Dragon Ball Super: el mismo Goku, con el gi naranja, pero con el pelo, las cejas y los ojos azules. Es la idea de Nico y la regla sí llega: el dorado tiene color, así que cambiar el tono lo convierte en azul (un negro no podría).
+
+Reglas: el dorado del pelo y las cejas (tono 40-62°, saturación de 0,30 o más, valor de 0,45 o más) pasa a azul cielo (tono 197°): #F7D23E → #3EC3F7; sombra #C89A1E → #1E98C8; brillo #FFF09A → #9AE2FF. Segunda regla: el verde azulado de los ojos (tono 160-190°, saturación de 0,35 o más) pasa a azul (205°): #2FB8A8 → #2F7FB8. El naranja del gi (tono 24-30°), la piel (28°, saturación 0,34) y los azules no cambian. **Efecto secundario:** los cordones amarillos de las botas (#E8C04A, tono 45°) también se vuelven azules (#4ABBE8). Son uno o dos píxeles y no estorban; separarlos del pelo por tono dejaría fuera las sombras del pelo (44°). Otra opción era el Super Saiyan con el gi azul de GT (en GT se transforma con ese gi), que casaría con el variocolor de las otras dos formas; prefiero el Supersaiyano Azul porque es mucho más conocido.
+
+**Imagen (FLUX):** fondo lavanda claro (`#C8B6F2`), que no lleva y separa bien el dorado del pelo. Rasgos para la revisión: pelo dorado en picos muy de punta hacia arriba; cejas doradas; ojos verde azulado; gi naranja vivo con la camiseta azul marino; fajín y muñequeras azules; botas azul oscuro con ribete rojo; piel clara; sin aura ni armas.
+
+#### Al integrarlo (para quien monte el lote)
+
+- Entradas en `PERSONAJES` para 10030 y 10031, con `mv: true` (así no salen como enemigos ni en los sucesos: `enemies.js` y `events.js` filtran `!p.mv`) y sin `start` ni `pool` propios: los ataques son los de Goku.
+- `G.EVO[10018] = [10030]`, `G.EVO[10030] = [10031]`, `G.EVO_NIVEL[10030] = 16` y `G.EVO_NIVEL[10031] = 40`. `js/data/evolutions.js` es generado (no se edita a mano), así que hay que añadirlas desde `multiverso.js`.
+- **Ojo con el gacha:** con `repetidoDaEvolucion` (`js/core/mods.js`), un Goku repetido desbloquea su siguiente evolución en la colección. Con estas entradas en `G.EVO`, un jugador acabaría teniendo a Goku Kaio-ken y Goku Super Saiyan (bst 690) para empezar la partida con ellos. Hay que decidir si las formas se excluyen de esa regla (mi recomendación) o se aceptan.
+- Tres hojas de sprites (una por forma), con su variocolor cada una.
+
+### Ataques
+
+| Ataque | Forma | Tipo | Evoluciona a (pide) | En inglés |
+|---|---|---|---|---|
+| Kamehameha (inicial) | rayo | Lucha | Super Kamehameha (Aprendizaje) | Kamehameha → Super Kamehameha |
+| Transmisión Instantánea | embestida | Psíquico | Kamehameha Instantáneo (Reflejos) | Instant Transmission → Instant Kamehameha |
+| Fuerza Universal | meteoro | Psíquico | Super Fuerza Universal (Síntesis) | Spirit Bomb → Super Spirit Bomb |
+| Puño del Dragón | golpe | Lucha | Puño del Dragón Divino (Potencia) | Dragon Fist → Godlike Dragon Fist |
+| Bastón Mágico | bumerán | Normal | Bastón Mágico Doble (Carrera) | Power Pole → Twin Power Pole |
+| Grito de Combate | nova | Psíquico | Onda Explosiva (Coraza) | Kiai → Explosive Wave |
+| Judía Mágica | potenciador | Planta | — | Senzu Bean |
+
+Son siete, los mismos en las tres formas: dos de Lucha, tres de Psíquico, uno de Normal y el potenciador de Planta, en seis formas de ataque distintas más el potenciador, sin repetir ninguna. Las seis evoluciones piden cada una una mejora distinta (sólo sobran Vigor e Imán).
+
+**Criterio de nombres (decisión de Nico):** el inicial se queda «Kamehameha»; el resto lleva nombres en español, con palabras en español y no transliteraciones del japonés. Si el doblaje de España le dio un nombre en español, va ése, con su fuente; si no, una traducción al español, marcada como no oficial.
+
+**Nombres, uno a uno** (wiki de Dragon Ball en español, que apunta los nombres de cada doblaje, y prensa española):
+- **Kamehameha** (oficial en España): en el doblaje castellano clásico fue «Onda Vital» (antes, «Ola Kame-Hame»), porque se tradujo desde el doblaje gallego; desde la película *Dragonball Evolución* (2009) en España se le llama Kamehameha (wiki). Se queda por decisión de Nico.
+- **Transmisión Instantánea** (oficial del doblaje de España): el nombre con el que la estrena cuando vuelve a la Tierra. En España tuvo varios: «Transmisión Instantánea», «Transferencia Mágica», «Conversión Momentánea», «Traslación Instantánea», «Desplazamiento Instantáneo» y, desde *La batalla de los dioses* (2013), «Shunkanido» (wiki en español, página «Teletransportación»). Elijo el primero porque es español, el de su estreno y el que mejor se entiende.
+- **Fuerza Universal** (oficial del doblaje de España): la Genkidama tuvo en España «Fuerza Vital» (cuando el Kaio del Norte se la enseña), «Fuerza Universal» (contra Vegeta y en la saga de Freezer), «Bola Espiritual» (cuando Cell dice que sabe hacerla) y «Bola Genki» (contra Boo) (wiki en español). Elijo **Fuerza Universal** porque es el nombre de sus dos usos más famosos, contra Vegeta y contra Freezer en Namek, y dice lo que es: la energía de todo lo que vive. «Bola Espiritual» describe mejor la esfera, pero es de una escena menor; «Fuerza Vital» se confunde con «Onda Vital», el viejo nombre del Kamehameha; «Bola Genki» es medio japonés.
+- **Puño del Dragón** (traducción, no comprobada en el doblaje de España): es el título del wiki en español para el *Ryūken*; los otros nombres que da («Golpe de Dragón», «Golpe Explosivo de Dragón», «Poder del Dragón Destructor») son del doblaje hispanoamericano o no dice de cuál. La película donde se estrena se tituló en España *Dragon Ball Z: El ataque del dragón*.
+- **Bastón Mágico** (castellano según el wiki): el *Nyoibō*; en Hispanoamérica, «Báculo Sagrado».
+- **Grito de Combate** (traducción mía, no oficial): la saga usa la palabra japonesa *kiai*, que nombra el grito con que el luchador suelta su espíritu de combate. No he encontrado un nombre del doblaje de España.
+- **Judía Mágica** (oficial en España): las *senzu*, las semillas de Karin que curan del todo, se llaman «Judías Mágicas» en España según el wiki en español; en el doblaje castellano de Dragon Ball y Dragon Ball Z también fueron «Habichuelas Mágicas», y en Hispanoamérica, «Semillas del Ermitaño». Va en singular porque se come una.
+- **Evoluciones:** «Kamehameha Instantáneo», «Puño del Dragón Divino» y «Onda Explosiva» son títulos del wiki en español, no traducciones mías, pero no he comprobado que sean los del doblaje de España. «Super Kamehameha» es el nombre de la técnica con el «Super» delante, como lo titula el wiki en español (Super-Kamehameha). **«Super Fuerza Universal» es mío**, no oficial: la Super Genkidama con el nombre de España de la técnica (en España, la que lanza contra Boo se llamó «Bola Genki»). **«Bastón Mágico Doble» es mío**, no oficial.
+
+**Repetidos:** ningún nombre ni id, de ataque ni de evolución, está ya en `moves.js` ni en `multiverso.js` (lo comprueba `validar.js`). Ojo con los parecidos, que son otro texto: Onda Certera, Onda Ígnea, Furia Dragón y Danza Dragón (upstream).
+
+**Equilibrio**, medido como `check.js` §24 (daño nominal = daño × proyectiles ÷ recarga; alcance = velocidad × vida en proyectiles, abanicos y novas, y radio en lo demás) contra los ataques Pokémon de su forma, con los golpes ya con su +20 % de daño y +25 % de alcance y arco. Los siete pasan `node tools/nico/multiverso/lote4/validar.js goku`. Los números son los mismos en las tres formas: lo que cambia al evolucionar es el multiplicador de ataque del personaje.
+
+| Ataque | Daño nominal (rango de su forma) | Alcance (rango) |
+|---|---|---|
+| Kamehameha | 20,8 (14,8-24,0) | 240 (215-250) |
+| Transmisión Instantánea | 25,3 (24,0-26,7) | 120 (110-120) |
+| Fuerza Universal | 50,4 (48,6-60,0) | 54 (40-54) |
+| Puño del Dragón | 37,5 (29,2-44,0) | 62 (55-85) |
+| Bastón Mágico | 20,0 (16,8-22,5) | 230 (200-230) |
+| Grito de Combate | 80,0 (70,0-121,7) | 224 (200-368) |
+| Judía Mágica | los números de Acua Aro | — |
+
+Las entradas de `ATAQUES`, tal cual irían en `multiverso.js` (con el comentario del daño nominal y el ataque Pokémon con que se compara, como los demás):
+
+```js
+    // ---- Goku (Dragon Ball) ----
+    { id: 'kamehameha', name: 'Kamehameha', type: 'fighting', kind: 'beam',                  // 20,8 (Hidrobomba 19,3; Furia Dragón 24,0)
+      desc: 'Junta las manos a un lado y suelta un rayo de energía azul, ancho y largo, en línea recta.',
+      cd: 1.3, dmg: 27, radius: 240, width: 40, vis: { beam: 'streak', pal: 'ice' },
+      evo: ['Super Kamehameha', 'xp'] },
+    { id: 'transmision-instantanea', name: 'Transmisión Instantánea', type: 'psychic', kind: 'dash', // 25,3 (Ataque Rápido 26,7; Golpe Aéreo 24,0)
+      desc: 'Dos dedos a la frente: desaparece y reaparece un poco más allá, golpeando y empujando a todo lo que cruza.',
+      cd: 0.75, dmg: 19, radius: 120, width: 34, knock: 50, vis: { proj: 'streak', pal: 'psychic' },
+      evo: ['Kamehameha Instantáneo', 'cd'] },
+    { id: 'fuerza-universal', name: 'Fuerza Universal', type: 'psychic', kind: 'meteor',     // 50,4 (Puño Meteoro 48,6; Avalancha 60,0)
+      desc: 'Levanta los brazos, reúne energía en una esfera enorme y la deja caer sobre un enemigo cercano.',
+      cd: 1.15, dmg: 58, count: 1, radius: 54, knock: 60, vis: { proj: 'ball', pal: 'water', trail: 'spark' },
+      evo: ['Super Fuerza Universal', 'rgn'] },
+    { id: 'puno-del-dragon', name: 'Puño del Dragón', type: 'fighting', kind: 'melee',       // 37,5 (Golpe Cuerpo 37,9)
+      desc: 'Un puñetazo cargado que atraviesa al enemigo con un dragón dorado: corto, estrecho y lo lanza lejos.',
+      cd: 0.8, dmg: 30, radius: 62, arc: 1.4, knock: 130, vis: { melee: 'jaws', pal: 'electric' },
+      evo: ['Puño del Dragón Divino', 'atk'] },
+    { id: 'baston-magico', name: 'Bastón Mágico', type: 'normal', kind: 'boomerang',         // 20,0 (Huesomerang 16,8; Hoja Afilada 22,2)
+      desc: 'El bastón rojo se estira hasta el enemigo y vuelve a su mano, golpeando a la ida y a la vuelta.',
+      cd: 0.9, dmg: 18, speed: 360, count: 1, radius: 230, size: 7, knock: 60, vis: { proj: 'streak', pal: 'fire' },
+      evo: ['Bastón Mágico Doble', 'spd'] },
+    { id: 'grito-de-combate', name: 'Grito de Combate', type: 'psychic', kind: 'nova',       // 80,0 (Disparo Lodo 70,0; Psíquico 88,9)
+      desc: 'Un grito de energía: ondas de aire salen de su cuerpo en todas direcciones y atraviesan a uno.',
+      cd: 1.25, dmg: 10, speed: 280, count: 10, pierce: 1, life: 0.8, size: 9, vis: { proj: 'wind', pal: 'psychic' },
+      evo: ['Onda Explosiva', 'def'] },
+    { id: 'judia-magica', name: 'Judía Mágica', type: 'grass', kind: 'buff',                 // los números de Acua Aro
+      desc: 'No hace daño: acumula REGENERACIÓN de vida.',
+      cd: 0.9, stat: 'regen', amount: 1.6, dur: 8, stacks: 4, vis: { buff: 'ball', pal: 'grass' } },
+```
+
+Al montarlo habría que añadir también su lista en `LISTA` de `check.js` §24, su inglés en `lang-en-mod.js` (el del potenciador ya existe: «Deals no damage: builds health REGENERATION.») y su marca en `CREDITS.md`, como dice CLAUDE.md.
+
+**Evoluciones y lo que hace el juego:** cada forma de ataque mejora siempre igual al evolucionar (`EVO_MODS` de `js/data/moves.js`), sea cual sea el nombre. Lo que dice cada apartado de abajo es lo que da el juego; donde el nombre de la saga no casa del todo con el efecto, lo digo. (No hay que confundir la evolución de un ataque con la de Goku: son cosas distintas, y al evolucionar Goku sus ataques, evolucionados o no, se quedan como están.)
+
+#### Kamehameha
+
+Junta las manos a un lado y suelta un rayo de energía azul, ancho y largo, en línea recta.
+
+Es el ataque inicial porque es el más famoso de Goku y de todo Dragon Ball. Lo inventó el Maestro Roshi, el Ermitaño Tortuga, tras 50 años de práctica, y Goku lo copió de niño la primera vez que lo vio (episodio 8 del anime; capítulo 14 del manga, según el wiki en español). Se carga con las manos juntas a un costado, sílaba a sílaba («ka-me-ha-me...»), y se suelta adelante con un «¡ha!».
+
+**Números:** el rayo más ancho de su forma (40, como Psicorrayo) y de los más largos (240; Hidrobomba, 250). Lo paga con la recarga más lenta después de Hidrobomba (1,3 s) y 20,8 de daño nominal: más que Hidrobomba (19,3) y Rayo Hielo (18,2), menos que Furia Dragón (24,0). No frena: es un golpe de energía pura.
+
+**Tipo:** Lucha, como los ataques de energía de los luchadores en Pokémon (Esfera Aural y Onda Certera). Así el inicial es de su tipo principal, que tienen las tres formas.
+
+**Aspecto:** la estela (`streak`) en la paleta del Hielo, que es la más parecida al azul claro y blanco del Kamehameha (el wiki da #00BFFF y blanco).
+
+**Nombre:** «Kamehameha», el nombre japonés y el actual en España; en el doblaje castellano clásico fue «Onda Vital» (ver arriba).
+
+**Evolución:** el Super Kamehameha (*Chō Kamehameha*), la versión más potente que inventa el propio Goku, con más energía y un rayo el doble de grueso (wiki). En el juego, la evolución de un rayo: ×1,8 de daño, un rayo un 50 % más grueso y más largo, y algo menos de recarga. Pide Aprendizaje porque es la técnica que aprendió y que él mismo mejora.
+
+#### Transmisión Instantánea
+
+Dos dedos a la frente: desaparece y reaparece un poco más allá, golpeando y empujando a todo lo que cruza.
+
+La técnica que Goku aprende de los habitantes del planeta Yardrat después de la saga de Freezer (*Shunkan Idō*): se concentra con dos dedos en la frente, localiza la energía de alguien y aparece a su lado al momento. En la historia le sirve para viajar, pero en la pelea la usa para sorprender al rival.
+
+**Lo que hace en el juego:** es una embestida. Goku cruza hasta 120 px hacia donde apunta (se para antes si hay un obstáculo), golpea y empuja a todo lo que queda en la línea y tiene 0,3 s de invulnerabilidad (`dash` en `js/systems/combat.js`). No busca al enemigo ni aparece a su lado: la descripción dice sólo lo que hace.
+
+**Tipo:** Psíquico, porque funciona con la mente: concentración y sentir la energía de otro.
+
+**Números:** el recorrido más largo de las embestidas (120, como Golpe Aéreo), la línea de Ataque Rápido (34) y un empujón medio (50). Lo paga con 25,3 de daño nominal, por debajo de Ataque Rápido (26,7) y por encima de Golpe Aéreo (24,0).
+
+**Aspecto:** la estela (`streak`) en la paleta del Psíquico: el destello con que desaparece. El juego no sabe dibujar un salto de sitio, así que se ve como una embestida muy rápida.
+
+**Nombre:** «Transmisión Instantánea», el del doblaje de España cuando Goku vuelve a la Tierra (ver arriba).
+
+**Evolución:** el Kamehameha Instantáneo (título del wiki en español; *Shunkan Idō Kamehameha*), de su combate contra Cell: carga el Kamehameha, se teletransporta delante del rival y lo suelta a bocajarro (wiki). **En el juego no dispara un rayo:** sigue siendo una embestida, con la mejora de su forma (×1,9 de daño, más distancia y menos recarga). Lo elegí porque es la evolución real de la técnica en la saga y porque el golpe al final del recorrido se lee como el disparo a bocajarro. Pide Reflejos, porque es todo cuestión de rapidez.
+
+#### Fuerza Universal
+
+Levanta los brazos, reúne energía en una esfera enorme y la deja caer sobre un enemigo cercano.
+
+La Genkidama, la técnica más fuerte que le enseña el Kaio del Norte: con los brazos en alto, Goku pide energía a todos los seres vivos de alrededor y la junta en una esfera gigante que lanza contra el rival (wiki). Sólo la puede hacer alguien de corazón puro. Es su último recurso contra Vegeta, Freezer y Kid Boo.
+
+**Tipo:** Psíquico. No es su fuerza sino la energía espiritual de los demás, que reúne concentrándose.
+
+**Números:** una sola esfera (los meteoros Pokémon dejan caer 2-4), la más grande de su forma (54, como Puño Meteoro) y con el golpe más fuerte (58). Empuja (60). Lo paga con un solo impacto, que puede fallar si no hay enemigos juntos, y 50,4 de daño nominal: algo más que Puño Meteoro (48,6) y bastante menos que Avalancha y Granizo (60,0).
+
+**Aspecto:** una bola (`ball`) en la paleta del Agua, azul y blanca como en el anime, con chispas (`spark`).
+
+**Nombre:** «Fuerza Universal», uno de los nombres del doblaje de España (ver arriba).
+
+**Evolución:** la Super Fuerza Universal (nombre mío; en la saga, Super Genkidama, *Chō Genki-dama*), la que Goku forma con la energía de todos los habitantes de la Tierra y otros planetas para acabar con Kid Boo (wiki). En el juego, la evolución de un meteoro: ×1,7 de daño, **+2 meteoros** y más radio. **En la saga es una sola esfera, más grande;** el juego deja caer tres. Lo mantengo porque es la evolución natural del ataque y el radio y el daño sí crecen; las tres esferas se leen como la energía que llega de todas partes. Pide Síntesis porque se forma con la energía vital de los demás.
+
+#### Puño del Dragón
+
+Un puñetazo cargado que atraviesa al enemigo con un dragón dorado: corto, estrecho y lo lanza lejos.
+
+El *Ryūken*, que Goku inventa en Super Saiyan 3 en la decimotercera película de Dragon Ball Z (en España, *El ataque del dragón*, 1995) y vuelve a usar en Dragon Ball GT. Echa el puño atrás, carga contra el rival y lo atraviesa; al tocarlo, su energía estalla en un dragón dorado como Shenlong (wiki).
+
+**Tipo:** Lucha: es un puñetazo.
+
+**Números:** el empujón más fuerte de su forma después de Golpe Cuerpo (130; Golpe Cuerpo, 140) y mucho daño por golpe (30). Lo paga con un arco muy estrecho (1,4; Golpe Kárate, 1,5), poco alcance (62) y recarga lenta (0,8 s). Da 37,5 de daño nominal, casi lo de Golpe Cuerpo (37,9).
+
+**Aspecto:** las fauces (`jaws`) en la paleta del Eléctrico, amarilla: la cabeza del dragón dorado.
+
+**Nombre:** el título del wiki en español; no he encontrado el del doblaje de España.
+
+**Evolución:** el Puño del Dragón Divino (*Godlike Dragon Fist*), la variante más poderosa del Puño del Dragón, que sale en el videojuego *Dragon Ball Fusions* (título del wiki en español, que la cita entre las variaciones del Ryūken). La «Explosión del Puño del Dragón» (*Ryūken Bakuhatsu*) no sirve: es otro nombre de la misma técnica, no una mejora. En el juego, la evolución de un golpe: ×1,9 de daño, más alcance y golpe en 360°, que se lee como el dragón que estalla alrededor. Pide Potencia.
+
+#### Bastón Mágico
+
+El bastón rojo se estira hasta el enemigo y vuelve a su mano, golpeando a la ida y a la vuelta.
+
+El *Nyoibō*, el bastón rojo que se alarga y se encoge a voluntad, el arma de Goku de niño en todo Dragon Ball. Se lo dejó su abuelo Gohan, y antes fue del Maestro Roshi y de Karin (wiki). Viene de la novela: el Rey Mono tiene un bastón igual.
+
+**Tipo:** Normal: es un palo de madera. Aporta un golpe neutro contra lo que Lucha y Psíquico no hieren bien (Volador, Bicho, Hada, Siniestro).
+
+**Números:** el recorrido más largo de su forma (230, como Huesomerang), un solo bastón rápido (360, como Psicocorte) y empuje (60). Lo paga con un solo golpe por tiro, sin abanico, y 20,0 de daño nominal: más que Huesomerang (16,8) y algo menos que Hoja Afilada (22,2) y Psicocorte (22,5).
+
+**Aspecto:** la estela (`streak`) en la paleta del Fuego, roja como el bastón. El bumerán gira al volar; aquí se lee como el bastón que va y viene.
+
+**Nombre:** «Bastón Mágico», el castellano según el wiki.
+
+**Evolución:** el Bastón Mágico Doble. **Nombre mío, no oficial:** en la saga Goku nunca lleva dos; lo elegí porque la evolución de un bumerán da ×1,8 de daño, +1 bumerán y más alcance, y el nombre dice lo que se ve. Pide Carrera porque el bastón es lo que usa para viajar y escalar (de la Torre de Karin al templo de Kami-sama).
+
+#### Grito de Combate
+
+Un grito de energía: ondas de aire salen de su cuerpo en todas direcciones y atraviesan a uno.
+
+El *kiai* de la saga («espíritu de lucha»), una técnica que usan muchos luchadores, Goku entre ellos: mueven el aire con su energía para golpear sin tocar, como puñetazos invisibles, un grito o una explosión de aire desde todo el cuerpo (wiki).
+
+**Tipo:** Psíquico: es fuerza de voluntad, sin contacto.
+
+**Números:** diez ondas que atraviesan a uno (como Onda Ígnea), con 80,0 de daño nominal: más que Disparo Lodo (70,0) y Burbuja (72,0), menos que Psíquico (88,9) y Onda Ígnea (104,0). Lo paga con poco alcance (224; Psíquico, 368) y sin quemar, frenar ni buscar al enemigo. En la saga empuja, pero las novas Pokémon no empujan.
+
+**Aspecto:** viento (`wind`) en la paleta del Psíquico: las ondas de aire se ven.
+
+**Nombre:** «Grito de Combate», traducción mía del *kiai*, no oficial (ver arriba).
+
+**Evolución:** la Onda Explosiva (título del wiki en español; *Shōgekiha*, *Explosive Wave*), una explosión de energía de todo el cuerpo que aparta a todo el que está cerca. Goku la usa en el anime y en las películas: en Dragon Ball Z, para romper el hielo en la Habitación del Espíritu y el Tiempo (episodio 157) y contra Majin Vegeta (episodio 230); en Dragon Ball GT, para salir de la máquina de M-2 (episodio 20); y en la película de Slug (wiki). En el juego, la evolución de una nova: +6 proyectiles, ×1,6 de daño y +1 perforación. Pide Coraza porque sirve para quitarse a los rivales de encima.
+
+#### Judía Mágica
+
+No hace daño: acumula REGENERACIÓN de vida.
+
+Copia exacta de los números de Acua Aro (regeneración 1,6, 4 acumulaciones, 8 s, recarga 0,9). Las *senzu* son las semillas que cultiva el maestro Karin: una sola quita el hambre durante días y cura cualquier herida al momento (wiki en español, página «Semillas del Ermitaño»). Goku las come sin parar, desde que sube a la Torre de Karin tras su pelea contra Piccolo hasta su entrenamiento rumbo a Namek.
+
+**Por qué este potenciador:** el Kaio-ken era el potenciador de la propuesta anterior y ahora es una forma (decisión de Nico), así que hacía falta otro de la saga. Las transformaciones ya suben su ataque y su velocidad al evolucionar; lo que le falta a Goku es aguantar, y la judía es lo que en la saga le devuelve a la pelea. Por eso copia Acua Aro, la regeneración. Sólo la llevan dos del Multiverso (Maxi Tomate y Metamorfosis Oscura), frente a los cinco de Danza Espada.
+
+**Tipo:** Planta: es una legumbre. **Aspecto:** una bola (`ball`) en la paleta de la Planta: la judía verde. Nadie del Multiverso usa todavía esa combinación.
+
+**Nombre:** «Judía Mágica», el de España (ver arriba).
+
+Como todo potenciador, no evoluciona.
+
+### Variocolor
+
+Cada forma lleva el suyo, por reglas de color aplicadas píxel a píxel a su hoja (`vario_reglas` de `montar.py`: la primera regla que encaja). Los de Goku Kaio-ken y Goku Super Saiyan están en «Formas»; éste es el de la forma base.
+
+**Goku con el gi azul de Dragon Ball GT.** En GT, Goku lleva un gi azul que recuerda al primero que tuvo de niño en Dragon Ball (wiki de Dragon Ball, página «Gi»; el primero era azul, con fajín blanco y muñequeras rojas, según su página). Es un traje de la propia saga, y un Goku de azul se distingue al instante del naranja a 32 px. Lo mismo hace el variocolor del Kaio-ken, así que el Goku variocolor sigue de azul al evolucionar (salvo en Super Saiyan, que pasa a Supersaiyano Azul).
+
+Regla para `montar.py`: el naranja del gi (tono 15-40°, saturación de 0,60 o más, valor de 0,25 o más) pasa a azul (tono 215°), con la saturación ×0,9 y el brillo ×0,85. El naranja #F2862A queda en #3574CE; su sombra #C45F18, en #235AA7; su luz #FFAA55, en #578DD9. La piel, el pelo negro, los ojos, el azul marino, el ribete rojo y los cordones no cambian.
+
+**Limitación:** el azul nuevo del gi se parece al del fajín y las muñequeras (#2D5BD3), que se quedan como están; de lejos, gi y fajín se leerán como una sola pieza azul con la camiseta azul marino debajo. No los cambio porque no he confirmado de qué color es el fajín en GT.
+
+**Por qué sólo el gi:** la piel y el gi sólo se separan por la saturación y se cruzan: con una paleta de prueba, la sombra más oscura de la piel (#8C5A3A, saturación 0,59) queda justo por debajo del corte de 0,60 y no cambia, y una luz muy pálida del gi (saturación por debajo de 0,60) se quedaría naranja claro: es un brillo y no molesta. **Los cortes son una estimación sobre una paleta de prueba:** hay que medirlos en la hoja real al hacer los sprites.
+
+**Ya no vale:** el variocolor rojo de la propuesta anterior (Goku en Kaio-ken), porque el Kaio-ken es ahora una forma con su propio dibujo.
+
+Descartados también:
+- **Gi de entrenamiento con Whis (Dragon Ball Super):** no es azul. Es un gi naranja más claro, con el símbolo de Whis (wiki en inglés, página «Whis Symbol Gi»), y a 32 px no se distinguiría.
+- **Super Saiyan 4 (Dragon Ball GT):** pelaje rojo por el cuerpo, otra silueta.
+- **Goku Black:** es otro personaje, un villano.
+
+### Imagen base (FLUX)
+
+La imagen base se genera con `tools/nico/multiverso/lote4/imagen.py goku`, que añade al prompt lo común (de frente, entero, pose relajada, fondo liso, sin texto). Fondo: verde claro (`#9BE07A`), que no lleva y contrasta con el naranja, el azul, el negro y la piel. Las imágenes de las otras dos formas, con sus prompts, sus fondos y sus rasgos, están en `formas[].sprite` del JSON.
+
+Prompt (`sprite.prompt`). FLUX no tiene prompt negativo y cada cosa que se nombra tiende a aparecer, así que lo que no debe salir se pide en positivo (forma base, pelo negro natural, manos vacías) y las negaciones se recortan a lo imprescindible, sin nombrar el pelo dorado:
+
+```
+Son Goku from Dragon Ball Z (Cell and Buu saga), adult, in his normal base form, as a stylized 3D video game character figure. A muscular martial artist with natural jet-black spiky hair: big upward black spikes on top and back, three black bangs hanging on his forehead. Black eyes, friendly confident face, light peach skin. A bright orange martial arts gi top with short sleeves, open in a V at the chest, over a dark navy-blue short-sleeved undershirt; the orange gi is plain, without any symbol. A royal-blue sash belt tied at the waist with the ends hanging at the side. Baggy bright orange gi trousers. Royal-blue wristbands on both wrists. Dark navy-blue boots with a red trim at the top and yellow laces. Arms slightly apart from the body, empty open hands. Colors: only bright orange, dark navy blue, royal blue, jet-black hair, peach skin, a little red and yellow on the boots. Plain flat light green background. No aura, no tail.
+```
+
+Rasgos que tiene que tener a 32 px (para la revisión): pelo negro en picos grandes hacia arriba con mechones en la frente; gi naranja vivo, chaqueta y pantalón anchos; camiseta azul marino en el cuello en V y las mangas; fajín azul; muñequeras azules; botas azul oscuro con ribete rojo; piel clara y ojos negros; brazos fuertes, sin armas ni aura.
+
+Paleta: naranja #F2862A, sombra #C45F18, luz #FFAA55; azul marino #1C2E6E; azul #2D5BD3; pelo #16161C y su brillo #3A3F52; piel #F3C7A0; ribete rojo #C8302C; cordones #E8C04A.
+
+En `PJ` de `montar.py`: `mov: 'anda'` (anda con sus pasos) y `disparo: 1` (empuja el Kamehameha con las dos manos hacia delante). Igual en las tres formas.
+
+**Riesgos a vigilar:**
+- **Que salga en Super Saiyan** (pelo rubio o aura dorada): es la imagen más dibujada de Goku y el modelo tiende a ella. El prompt pide la forma base y el pelo negro natural; hay que mirar que el pelo sea negro.
+- **Que salga Goku niño, o con cola o bastón:** tiene que ser el adulto, con las manos vacías.
+- **Que el naranja de la piel y el del gi se mezclen** a 32 px: el gi tiene que ser naranja vivo y saturado y la piel clara, para que se lea y para que el variocolor sólo tiña el gi.
+- **Que el pelo pierda los picos:** la silueta del pelo es lo que lo hace Goku a 32 px.
+- **Que las tres formas no parezcan el mismo muñeco:** las tres hojas tienen que tener las mismas proporciones, para que la evolución en partida se lea como el mismo Goku que cambia.
+- **El aura del Kaio-ken:** si sale grande y suelta, ensucia la silueta y la reconstrucción 3D; tiene que ir pegada al cuerpo.
+
+### Fuentes
+
+Consultadas el 20-11-2026.
+
+- https://en.wikipedia.org/wiki/Goku (creador, debut del 3-12-1984, Sun Wukong, Bruce Lee y Jackie Chan, Kakarot, estilo de lucha, técnicas, Kinton y Nyoibō, transformaciones)
+- https://dragonball.fandom.com/wiki/Goku (wiki de Dragon Ball, leída por su API: aspecto y los gi de cada etapa, con el de las sagas de Cell y de Boo y el primero, azul)
+- https://dragonball.fandom.com/wiki/Gi (wiki de Dragon Ball: en GT, Goku lleva un gi azul que recuerda al primero)
+- https://dragonball.fandom.com/wiki/Whis_Symbol_Gi (wiki de Dragon Ball: el gi de Whis es naranja)
+- https://dragonball.fandom.com/wiki/Kaio-ken (wiki de Dragon Ball: aura roja de fuego y cuerpo y ropa teñidos de rojo; el Kaio-ken máximo del Goku de GT en *Dragon Ball Fusions*)
+- https://dragonball.fandom.com/es/wiki/Kaio-ken (wiki en español: cómo funciona, los nombres del doblaje castellano)
+- https://dragonball.fandom.com/es/wiki/Supersaiyano (wiki en español: pelo rubio y erizado, ojos azul verdoso o turquesa, aura dorada; la leyenda del guerrero de hace mil años; Supersaiyano Dios Supersaiyano)
+- https://dragonball.fandom.com/es/wiki/Kamehameha (wiki en español: Roshi, debut, «Ola Kame-Hame» y «Onda Vital» en España y por qué, «Kamehameha» en España desde 2009)
+- https://dragonball.fandom.com/es/wiki/Genkidama (wiki en español: el Kaio del Norte, el corazón puro y los nombres de España: Fuerza Vital, Fuerza Universal, Bola Espiritual y Bola Genki, con cuándo se usó cada uno)
+- https://dragonball.fandom.com/es/wiki/Shunkan_Idō («Teletransportación» en el wiki en español: los nombres del doblaje de España, con «Transmisión Instantánea» cuando Goku vuelve a la Tierra y «Shunkanido» desde *La batalla de los dioses*)
+- https://dragonball.fandom.com/es/wiki/Kamehameha_Instantáneo (wiki en español: el título «Kamehameha Instantáneo» y el combate contra Cell)
+- https://dragonball.fandom.com/es/wiki/Semillas_del_Ermitaño (wiki en español: «Judías Mágicas» en España, «Habichuelas Mágicas» en el doblaje castellano de Dragon Ball y Dragon Ball Z, Karin, primera aparición)
+- https://dragonball.fandom.com/es/wiki/Nyoibo (wiki en español, «Báculo Mágico»: «Bastón Mágico» en castellano)
+- https://dragonball.fandom.com/es/wiki/Ryūken (wiki en español, «Puño del Dragón»: otros nombres, «Explosión del Puño del Dragón» y sus variaciones, con el Puño del Dragón Divino)
+- Página de la película 13 en el wiki en español (*¡La explosión del Puño del Dragón! Si Goku no puede hacerlo, ¿quién lo hará?*), leída por su API: en España, *Dragon Ball Z: El ataque del dragón*
+- https://dragonball.fandom.com/es/wiki/Onda_Explosiva (wiki en español: «Onda Explosiva», con Goku entre sus usuarios)
+- https://dragonball.fandom.com/es/wiki/Kiai (wiki en español: el kiai como fuerza de ki que sale del cuerpo)
+- https://dragonball.fandom.com/es/wiki/Taiyoken (wiki en español: lo creó Tsuru-Sen'nin y lo estrenó Tenshinhan)
+- https://dragonball.fandom.com/wiki/Kiai (wiki de Dragon Ball, leída por su API; y las páginas Explosive Wave, con los episodios 157 y 230 de Dragon Ball Z, el 20 de Dragon Ball GT y la película de Slug; Dragon Fist, Instant Kamehameha, Super Kamehameha, Super Spirit Bomb, Spirit Bomb y Power Pole)
+- https://www.espinof.com/anime/que-kamehameha-goku-se-llamo-onda-vital-version-espanola-dragon-ball-como-realidad-bastante-fiel-a-version-japonesa-anime (Espinof, 05-03-2024: por qué «Onda Vital»)
+- https://www.sensacine.com/noticias/series/noticia-1000220410/ (Sensacine: «Onda Vital» y «Super guerrero» en el doblaje de España)
+- https://bulbapedia.bulbagarden.net/wiki/Medicham_(Pok%C3%A9mon) (Medicham es Lucha/Psíquico; sólo a través del buscador)
+- `js/data/pokedex.js` (Charmeleon, Charizard, Lucario, Mewtwo y los demás de referencia), `tools/fetch_pokedex.py` (la fórmula de las estadísticas y la regla de la rareza), `js/systems/evo-partida.js` y `js/data/evolutions.js` (la evolución en partida, `G.EVO` y `G.EVO_NIVEL`), `js/core/mods.js` (`repetidoDaEvolucion`), `js/data/moves.js` (`EVO_MODS`) y `js/systems/combat.js` (`dash`), leídos el 20-11-2026.
+
+**Límites de lo comprobado:**
+- Los nombres de España salen del wiki en español y de prensa; no los he oído en el doblaje ni los he visto en un videojuego en España. Los de Puño del Dragón, Kamehameha Instantáneo, Puño del Dragón Divino y Onda Explosiva son títulos del wiki, sin comprobar en el doblaje de España.
+- «Grito de Combate», «Super Fuerza Universal» y «Bastón Mágico Doble» son nombres míos, no oficiales.
+- Las estadísticas de las formas son mías: salen de la fórmula del juego, no de ningún juego de Dragon Ball.
+- El variocolor del Kaio-ken (Kaio-ken con el gi azul de GT) se apoya en un videojuego (*Dragon Ball Fusions*, con el Goku de GT niño), no en el anime.
+- Las páginas del wiki se leyeron por su API (el navegador normal devuelve 402).
+- Los cortes de los tres variocolores son una estimación sobre paletas de prueba: hay que medirlos en las hojas reales al hacer los sprites.
+- El recuento de la votación es el de Firestore leído el 20-11-2026.
+<!-- /lote4 -->

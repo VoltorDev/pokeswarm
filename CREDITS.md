@@ -137,7 +137,7 @@ uso **no comercial** y con atribución a sus artistas.
 Personajes de otras franquicias que salen, como guiño, en el banner «Multiverso» del gacha:
 **Agumon** (*Digimon*), el **Doom Slayer** y el **Cacodemonio** (*DOOM*), **Kirby** (*Kirby*), **Link**
 (*The Legend of Zelda*), **Samus** (*Metroid*), **Pac-Man** y **Blinky** (*Pac-Man*), **Drácula**
-(*Castlevania*), el **Ojo de Cthulhu** (*Terraria*), el **Jefe Maestro** (*Halo*), **Kratos** (*God of War*) y **Ash** (*Pokémon*, el anime).
+(*Castlevania*), el **Ojo de Cthulhu** (*Terraria*), el **Jefe Maestro** (*Halo*), **Kratos** (*God of War*), **Ash** (*Pokémon*, el anime) y **Goku**, con sus formas Kaio-ken y Super Saiyan (*Dragon Ball*).
 
 Sus sprites se generaron para este proyecto con [PixelLab](https://www.pixellab.ai), una herramienta
 de pixel art por IA (las 8 rotaciones de cada uno y sus pasos al andar), y están en
@@ -148,6 +148,12 @@ juego (`assets/pokemon/10001` a `10013`), con las animaciones que faltan y el va
 sus rotaciones `tools/nico/multiverso/pasos.py`. Kratos y Ash no salen de PixelLab: una imagen de FLUX.1 [schnell]
 (Black Forest Labs, por Cloudflare Workers AI) pasada a 3D en local con TRELLIS.2 (Microsoft, MIT), renderizada en
 Blender y bajada a pixel art por `rotar3d.py` y `pixelar.py`. No usan sprites de SpriteCollab.
+
+Goku (`assets/pokemon/10018`, y sus formas `10030` y `10031`) sale de PixelLab, con sus 8 rotaciones y las
+animaciones de puñetazo y de Kamehameha generadas en su web. El tinte de Kaio-ken y las auras roja y dorada
+están hechos por código (`tools/nico/multiverso/lote4/trabajo/goku_formas.py`), tomando como referencia de
+paleta y de forma los sprites de *Ultimate LSW* de qsab101 («Que~»), con permiso de Nico. No se copia ningún
+píxel suyo. La guía de estilo con las fuentes consultadas está en `tools/nico/multiverso/lote4/trabajo/goku/estilo.md`.
 
 ## Datos
 
@@ -184,4 +190,6 @@ Kirby es de Nintendo y HAL Laboratory; The Legend of Zelda, Link, Metroid y Samu
 Pac-Man y Blinky, de Bandai Namco Entertainment; Castlevania y Drácula, de Konami; Terraria y el Ojo de
 Cthulhu, de Re-Logic; Halo y el Jefe Maestro, de Microsoft (Halo Studios); God of War y Kratos, de Sony Interactive
 Entertainment (Santa Monica Studio); Ash Ketchum (el anime de Pokémon), de The Pokémon Company, OLM y TV Tokyo.
+Dragon Ball y Son Goku son de Akira Toriyama y Bird Studio/Shueisha; el anime, de Toei Animation, y los
+videojuegos, de Bandai Namco.
 PokéSwarm tampoco está afiliado a ellos ni lo aprueban.

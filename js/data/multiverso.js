@@ -104,7 +104,20 @@ G.MULTIVERSO = (() => {
       pool: ['pikachu-johto', 'cyndaquil', 'totodile', 'chikorita', 'noctowl', 'phanpy', 'heracross', 'hazte-con-todos'] },
     { dex: 10015, name: 'Ash (Hoenn)', types: ['normal'], hp: 100, spd: 116, atk: 1.12, rarity: 2, bst: 400,
       starter: false, gen: GEN, mv: true, start: 'pikachu-hoenn', serie: 'Pokémon (anime)',
-      pool: ['pikachu-hoenn', 'treecko', 'taillow', 'corphish', 'torkoal', 'snorunt', 'a-toda-velocidad'] }
+      pool: ['pikachu-hoenn', 'treecko', 'taillow', 'corphish', 'torkoal', 'snorunt', 'a-toda-velocidad'] },
+    // <lote4> Cuarto lote (14-11-2026; elegido por Nico; fichas en tools/nico/multiverso/FICHAS.md, datos en tools/nico/multiverso/lote4/)
+    { dex: 10018, name: 'Goku', types: ['fighting', 'psychic'], hp: 108, spd: 112, atk: 1.16, rarity: 2, bst: 430,
+      starter: false, gen: GEN, mv: true, start: 'kamehameha', serie: 'Dragon Ball',
+      pool: ['kamehameha', 'transmision-instantanea', 'fuerza-universal', 'puno-del-dragon', 'baston-magico', 'grito-de-combate', 'judia-magica'] },
+    // forma de Goku: sólo evolucionando en la partida (G.EVO desde aquí); ni banner, ni colección, ni de enemigo
+    { dex: 10030, name: 'Goku Kaio-ken', types: ['fighting', 'fire'], hp: 112, spd: 124, atk: 1.32, rarity: 4, bst: 535,
+      starter: false, gen: GEN, mv: true, start: 'kamehameha', serie: 'Dragon Ball', formaDe: 10018, nivel: 16,
+      pool: ['kamehameha', 'transmision-instantanea', 'fuerza-universal', 'puno-del-dragon', 'baston-magico', 'grito-de-combate', 'judia-magica'] },
+    // forma de Goku: sólo evolucionando en la partida (G.EVO desde aquí); ni banner, ni colección, ni de enemigo
+    { dex: 10031, name: 'Goku Super Saiyan', types: ['fighting', 'dragon'], hp: 122, spd: 136, atk: 1.58, rarity: 5, bst: 690,
+      starter: false, gen: GEN, mv: true, start: 'kamehameha', serie: 'Dragon Ball', formaDe: 10030, nivel: 40,
+      pool: ['kamehameha', 'transmision-instantanea', 'fuerza-universal', 'puno-del-dragon', 'baston-magico', 'grito-de-combate', 'judia-magica'] },
+    // </lote4>
   ];
 
   // En el comentario de cada uno, su daño nominal y el de ataques Pokémon de su forma.
@@ -610,7 +623,37 @@ G.MULTIVERSO = (() => {
       evo: ['Glalie', 'atk'] },
     { id: 'a-toda-velocidad', name: '¡A toda velocidad!', type: 'normal', kind: 'buff',      // los números de Agilidad
       desc: 'No hace daño: acumula VELOCIDAD mientras esté activo.',
-      cd: 0.85, stat: 'spd', amount: 0.1, dur: 7, stacks: 5, vis: { buff: 'arrow', pal: 'electric' } }
+      cd: 0.85, stat: 'spd', amount: 0.1, dur: 7, stacks: 5, vis: { buff: 'arrow', pal: 'electric' } },
+    // <lote4-ataques> Cuarto lote (14-11-2026)
+    // ---- Goku (Dragon Ball (manga de Akira Toriyama en Weekly Shōnen Jump desde 1984; anime de Toei Animation: Dragon Ball, Dragon Ball Z, Dragon Ball GT y Dragon Ball Super; videojuegos de Bandai Namco)) ----
+    { id: 'kamehameha', name: 'Kamehameha', type: 'fighting', kind: 'beam',              // 20,8 (Foco Resplandor 21,9)
+      desc: 'Junta las manos a un lado y suelta un rayo de energía azul, ancho y largo, en línea recta.',
+      cd: 1.3, dmg: 27, radius: 240, width: 40, vis: { beam: 'streak', pal: 'ice' },
+      evo: ['Super Kamehameha', 'xp'] },
+    { id: 'transmision-instantanea', name: 'Transmisión Instantánea', type: 'psychic', kind: 'dash', // 25,3 (Golpe Aéreo 24,0)
+      desc: 'Dos dedos a la frente: desaparece y reaparece un poco más allá, golpeando y empujando a todo lo que cruza.',
+      cd: 0.75, dmg: 19, radius: 120, width: 34, knock: 50, vis: { proj: 'streak', pal: 'psychic' },
+      evo: ['Kamehameha Instantáneo', 'cd'] },
+    { id: 'fuerza-universal', name: 'Fuerza Universal', type: 'psychic', kind: 'meteor', // 50,4 (Puño Meteoro 48,6)
+      desc: 'Levanta los brazos, reúne energía en una esfera enorme y la deja caer sobre un enemigo cercano.',
+      cd: 1.15, dmg: 58, count: 1, radius: 54, knock: 60, vis: { proj: 'ball', pal: 'water', trail: 'spark' },
+      evo: ['Super Fuerza Universal', 'rgn'] },
+    { id: 'puno-del-dragon', name: 'Puño del Dragón', type: 'fighting', kind: 'melee',   // 37,5 (Mordisco 37,8)
+      desc: 'Un puñetazo cargado que atraviesa al enemigo con un dragón dorado: corto, estrecho y lo lanza lejos.',
+      cd: 0.8, dmg: 30, radius: 62, arc: 1.4, knock: 130, vis: { melee: 'jaws', pal: 'electric' },
+      evo: ['Puño del Dragón Divino', 'atk'] },
+    { id: 'baston-magico', name: 'Bastón Mágico', type: 'normal', kind: 'boomerang',     // 20,0 (Hoja Afilada 22,2)
+      desc: 'El bastón rojo se estira hasta el enemigo y vuelve a su mano, golpeando a la ida y a la vuelta.',
+      cd: 0.9, dmg: 18, speed: 360, count: 1, radius: 230, size: 7, knock: 60, vis: { proj: 'streak', pal: 'fire' },
+      evo: ['Bastón Mágico Doble', 'spd'] },
+    { id: 'grito-de-combate', name: 'Grito de Combate', type: 'psychic', kind: 'nova',   // 80,0 (Burbuja 72,0)
+      desc: 'Un grito de energía: ondas de aire salen de su cuerpo en todas direcciones y atraviesan a uno.',
+      cd: 1.25, dmg: 10, speed: 280, count: 10, pierce: 1, life: 0.8, size: 9, vis: { proj: 'wind', pal: 'psychic' },
+      evo: ['Onda Explosiva', 'def'] },
+    { id: 'judia-magica', name: 'Judía Mágica', type: 'grass', kind: 'buff',             // los números de Acua Aro
+      desc: 'No hace daño: acumula REGENERACIÓN de vida.',
+      cd: 0.9, stat: 'regen', amount: 1.6, dur: 8, stacks: 4, vis: { buff: 'ball', pal: 'grass' } },
+    // </lote4-ataques>
   ];
 
   // Geometría de las hojas (G.SPRITE_META): la escribe tools/nico/multiverso/montar.py.
@@ -629,15 +672,31 @@ G.MULTIVERSO = (() => {
     10011: {"s":1,"a":{"Idle":{"w":32,"h":37,"n":2,"r":8,"d":[36,20],"ax":15.5,"ay":31.5},"Walk":{"w":48,"h":45,"n":4,"r":8,"d":[6,8,6,8],"ax":23.5,"ay":39.5},"Attack":{"w":40,"h":37,"n":7,"r":8,"d":[2,2,3,3,2,2,2],"ax":19.5,"ay":31.5},"Shoot":{"w":40,"h":37,"n":5,"r":8,"d":[2,2,3,2,2],"ax":19.5,"ay":31.5},"Charge":{"w":32,"h":37,"n":2,"r":8,"d":[4,4],"ax":15.5,"ay":31.5},"Hurt":{"w":40,"h":37,"n":2,"r":8,"d":[2,8],"ax":19.5,"ay":31.5},"Faint":{"w":40,"h":37,"n":4,"r":8,"d":[8,12,4,10],"ax":19.5,"ay":31.5}},"sh":1},
     10012: {"s":1,"a":{"Idle":{"w":32,"h":37,"n":2,"r":8,"d":[36,20],"ax":15.5,"ay":31.5},"Walk":{"w":48,"h":45,"n":4,"r":8,"d":[6,8,6,8],"ax":23.5,"ay":39.5},"Attack":{"w":40,"h":37,"n":7,"r":8,"d":[2,2,3,3,2,2,2],"ax":19.5,"ay":31.5},"Shoot":{"w":40,"h":37,"n":5,"r":8,"d":[2,2,3,2,2],"ax":19.5,"ay":31.5},"Charge":{"w":32,"h":37,"n":2,"r":8,"d":[4,4],"ax":15.5,"ay":31.5},"Hurt":{"w":40,"h":37,"n":2,"r":8,"d":[2,8],"ax":19.5,"ay":31.5},"Faint":{"w":40,"h":37,"n":4,"r":8,"d":[8,12,4,10],"ax":19.5,"ay":31.5}},"sh":1},
     10013: {"s":1,"a":{"Idle":{"w":32,"h":37,"n":2,"r":8,"d":[36,20],"ax":15.5,"ay":31.5},"Walk":{"w":48,"h":45,"n":4,"r":8,"d":[6,8,6,8],"ax":23.5,"ay":39.5},"Attack":{"w":40,"h":37,"n":7,"r":8,"d":[2,2,3,3,2,2,2],"ax":19.5,"ay":31.5},"Shoot":{"w":40,"h":37,"n":5,"r":8,"d":[2,2,3,2,2],"ax":19.5,"ay":31.5},"Charge":{"w":32,"h":37,"n":2,"r":8,"d":[4,4],"ax":15.5,"ay":31.5},"Hurt":{"w":40,"h":37,"n":2,"r":8,"d":[2,8],"ax":19.5,"ay":31.5},"Faint":{"w":40,"h":37,"n":4,"r":8,"d":[8,12,4,10],"ax":19.5,"ay":31.5}},"sh":1},
+    10018: {"s":1,"a":{"Idle":{"w":32,"h":36,"n":2,"r":8,"d":[36,20],"ax":15.5,"ay":30.5},"Walk":{"w":48,"h":44,"n":4,"r":8,"d":[6,8,6,8],"ax":23.5,"ay":38.5},"Attack":{"w":56,"h":44,"n":8,"r":8,"d":[2,2,2,2,3,3,2,2],"ax":27.5,"ay":38.5},"Shoot":{"w":56,"h":44,"n":6,"r":8,"d":[2,3,4,4,3,4],"ax":27.5,"ay":38.5},"Charge":{"w":32,"h":36,"n":2,"r":8,"d":[4,4],"ax":15.5,"ay":30.5},"Hurt":{"w":40,"h":36,"n":2,"r":8,"d":[2,8],"ax":19.5,"ay":30.5},"Faint":{"w":40,"h":36,"n":4,"r":8,"d":[8,12,4,10],"ax":19.5,"ay":30.5}},"sh":1},
+    10030: {"s":1,"a":{"Idle":{"w":32,"h":36,"n":2,"r":8,"d":[36,20],"ax":15.5,"ay":30.5},"Walk":{"w":48,"h":44,"n":4,"r":8,"d":[6,8,6,8],"ax":23.5,"ay":38.5},"Attack":{"w":56,"h":44,"n":8,"r":8,"d":[2,2,2,2,3,3,2,2],"ax":27.5,"ay":38.5},"Shoot":{"w":56,"h":44,"n":6,"r":8,"d":[2,3,4,4,3,4],"ax":27.5,"ay":38.5},"Charge":{"w":32,"h":36,"n":2,"r":8,"d":[4,4],"ax":15.5,"ay":30.5},"Hurt":{"w":40,"h":36,"n":2,"r":8,"d":[2,8],"ax":19.5,"ay":30.5},"Faint":{"w":40,"h":36,"n":4,"r":8,"d":[8,12,4,10],"ax":19.5,"ay":30.5}},"sh":1},
+    10031: {"s":1,"a":{"Idle":{"w":32,"h":37,"n":2,"r":8,"d":[36,20],"ax":15.5,"ay":31.5},"Walk":{"w":48,"h":45,"n":4,"r":8,"d":[6,8,6,8],"ax":23.5,"ay":39.5},"Attack":{"w":56,"h":45,"n":8,"r":8,"d":[2,2,2,2,3,3,2,2],"ax":27.5,"ay":39.5},"Shoot":{"w":56,"h":45,"n":6,"r":8,"d":[2,3,4,4,3,4],"ax":27.5,"ay":39.5},"Charge":{"w":32,"h":37,"n":2,"r":8,"d":[4,4],"ax":15.5,"ay":31.5},"Hurt":{"w":40,"h":37,"n":2,"r":8,"d":[2,8],"ax":19.5,"ay":31.5},"Faint":{"w":40,"h":37,"n":4,"r":8,"d":[8,12,4,10],"ax":19.5,"ay":31.5}},"sh":1},
   };
   // </meta montar.py>
 
+  // Formas (MOD nico, 20-11-2026, Goku): una entrada con `formaDe` (el número de la forma de la que sale) y `nivel` (el
+  // real, como G.EVO_NIVEL) es una evolución de especie que sólo se alcanza dentro de la partida (js/systems/evo-partida.js).
+  // Va en G.DEX_BY y G.SPRITE_META (la evolución en partida, el sprite, el cooperativo y el ranking la encuentran) pero NO
+  // en G.DEX: así no sale en ningún banner (gacha.js sólo mira G.DEX), ni en la colección ni en sus recuentos (no se puede
+  // tener), ni de enemigo, jefe o Pokémon perdido, ni en «Desbloquear todos». Se engancha a G.EVO / G.EVO_NIVEL desde aquí
+  // porque js/data/evolutions.js es generado; sólo si su forma anterior también está cargada (sin hojas, nada). Un repetido
+  // del gacha no la desbloquea (G.MODS.evolucionDeRepetido). Comparte el `pool` de su forma base.
   for (const p of PERSONAJES) {
     if (G.DEX_BY[p.dex] || !META[p.dex]) continue;
+    if (p.formaDe && !G.DEX_BY[p.formaDe]) continue;
     if (!G.SPRITE_META[p.dex]) G.SPRITE_META[p.dex] = META[p.dex];
     const mon = Object.assign({}, p);
-    G.DEX.push(mon);
+    if (!p.formaDe) G.DEX.push(mon);
     G.DEX_BY[mon.dex] = mon;
+    if (p.formaDe && G.EVO) {
+      const hijos = G.EVO[p.formaDe] || (G.EVO[p.formaDe] = []);
+      if (!hijos.includes(p.dex)) hijos.push(p.dex);
+      if (p.nivel) (G.EVO_NIVEL || (G.EVO_NIVEL = {}))[p.dex] = p.nivel;
+    }
   }
 
   // La forma summon (los Pokémon de Ash, js/systems/invocar.js): su escalera y lo que gana al evolucionar (el Pokémon
@@ -726,9 +785,29 @@ G.MULTIVERSO = (() => {
    */
   function ficha(dex) {
     const p = G.DEX_BY[dex], s = G.DB && G.DB.save;
-    if (!p || !p.mv || !s || s.owned[dex]) return;
+    if (!p || !p.mv || !s) return;
+    if (s.owned[dex]) return notaFormas(dex);
     const nota = document.querySelector('#dex-detail p.center');
     if (nota) nota.innerHTML = 'Aún no lo tienes.<br>Sólo sale en el banner del Multiverso, en el gacha.';
+  }
+
+  /** Las formas cargadas que salen de `dex` dentro de la partida, en orden (Goku -> Kaio-ken -> Super Saiyan). */
+  function formasDe(dex) {
+    const out = [];
+    for (let d = dex, h; (h = PERSONAJES.find(x => x.formaDe === d)) && G.DEX_BY[h.dex]; d = h.dex) out.push(G.DEX_BY[h.dex]);
+    return out;
+  }
+
+  /** MOD nico (20-11-2026): las formas no están en la colección (no se pueden tener); la ficha de quien las tiene lo dice
+   *  bajo sus ataques, con el nivel de la partida al que sale cada carta. Textos en español: i18n.js los traduce en el DOM. */
+  function notaFormas(dex) {
+    const f = G.MODS && G.MODS.evoEnPartida && G.EvoPartida ? formasDe(dex) : [];
+    const ref = f.length && document.querySelector('#dex-detail .move-icons');
+    if (!ref) return;
+    const el = document.createElement('p');
+    el.className = 'mv-formas';
+    el.innerHTML = 'En la partida evoluciona: ' + f.map((m, i) => `${i ? ' → ' : ''}<b class="gold">${m.name}</b> (nivel ${G.EvoPartida.nivelDe(m.dex)})`).join('');
+    ref.after(el);
   }
 
   /** G.MODS.multiversoTicketLila: en este banner se tira con tickets ×10 (los lila). */
@@ -781,5 +860,5 @@ G.MULTIVERSO = (() => {
     if (b10) b10.disabled = !coste(save, 10, gen, 't1');
   }
 
-  return { GEN, BANNER, PERSONAJES, ATAQUES, lista, cartel, ficha, coste, botones, premio };
+  return { GEN, BANNER, PERSONAJES, ATAQUES, lista, cartel, ficha, formasDe, coste, botones, premio };
 })();

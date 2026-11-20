@@ -5818,11 +5818,11 @@ function multiversoChecks() {
   const semilla = s => () => { s = s + 0x6D2B79F5 | 0; let x = Math.imul(s ^ s >>> 15, 1 | s); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
   const sembrar = (c, s) => { c.__rnd = semilla(s); vm.runInContext('Math.random = () => __rnd()', c); };
   const pngTam = f => { const b = fs.readFileSync(path.join(ROOT, f)); return b.toString('ascii', 1, 4) === 'PNG' ? [b.readUInt32BE(16), b.readUInt32BE(20)] : null; };
-  let MV = null;
+  let MV = null, MVG = null;
   // ---- A. Datos: la entrada de la Pokédex, sus hojas y su ataque ----
   try {
     const sin = montar({ con: false }).G, c = montar(), G = c.G;
-    MV = G.MULTIVERSO;
+    MV = G.MULTIVERSO; MVG = G;
     const lista = MV.lista();
     t('G.MULTIVERSO: gen 10 «Multiverso» con al menos un personaje, todos con mv, gen 10, número desde 10001 y en G.DEX_BY',
       MV.GEN === 10 && MV.BANNER.gen === 10 && MV.BANNER.name === 'Multiverso' && lista.length >= 1 &&
@@ -5864,7 +5864,7 @@ function multiversoChecks() {
     });
     const FLOTAN = [10003, 10008, 10010];   // el Cacodemonio, Blinky y el Ojo de Cthulhu (Drácula se desliza por el suelo)
     t('geometría propia (META de multiverso.js, la escribe montar.py): las 7 animaciones en 8 direcciones con su ancla dentro, variocolor, el radio y el tamaño de un Pokémon normal (Idle de 32 de ancho, como Charmander), y sólo flotan el Cacodemonio, Blinky y el Ojo de Cthulhu',
-      lista.length === 13 && geo.every(g => g.idle && g.filas && g.sh && g.radio && g.escala && g.flota === FLOTAN.includes(g.dex)) && lista.every(p => Object.keys(G.SPRITE_META[p.dex].a).length === 7), geo);
+      lista.length === 14 && geo.every(g => g.idle && g.filas && g.sh && g.radio && g.escala && g.flota === FLOTAN.includes(g.dex)) && lista.every(p => Object.keys(G.SPRITE_META[p.dex].a).length === 7), geo);
     // La lista que validó Nico el 14-10-2026: [id, nombre, forma, tipo, evolución, lo que pide] (sin evolución, un potenciador).
     const LISTA = {
       10001: [['llama-bebe', 'Llama Bebé', 'projectile', 'fire', 'Mega Llama', 'atk'], ['garra-afilada', 'Garra Afilada', 'melee', 'dragon', 'Brazo Tridente', 'atk'],
@@ -5931,7 +5931,16 @@ function multiversoChecks() {
       10015: [['pikachu-hoenn', 'Pikachu', 'summon', 'electric', 'Placaje Eléctrico', 'atk'], ['treecko', 'Treecko', 'summon', 'grass', 'Sceptile', 'atk'],
         ['taillow', 'Taillow', 'summon', 'flying', 'Swellow', 'spd'], ['corphish', 'Corphish', 'summon', 'water', 'Guillotina', 'atk'],
         ['torkoal', 'Torkoal', 'summon', 'fire', 'Sofoco', 'def'], ['snorunt', 'Snorunt', 'summon', 'ice', 'Glalie', 'atk'],
-        ['a-toda-velocidad', '¡A toda velocidad!', 'buff', 'normal']]
+        ['a-toda-velocidad', '¡A toda velocidad!', 'buff', 'normal']],
+      // <lote4> Cuarto lote (14-11-2026; tools/nico/multiverso/lote4/): sin hojas aún no se cargan; se miran en MULTIVERSO.PERSONAJES.
+      10018: [['kamehameha', 'Kamehameha', 'beam', 'fighting', 'Super Kamehameha', 'xp'],
+        ['transmision-instantanea', 'Transmisión Instantánea', 'dash', 'psychic', 'Kamehameha Instantáneo', 'cd'],
+        ['fuerza-universal', 'Fuerza Universal', 'meteor', 'psychic', 'Super Fuerza Universal', 'rgn'],
+        ['puno-del-dragon', 'Puño del Dragón', 'melee', 'fighting', 'Puño del Dragón Divino', 'atk'],
+        ['baston-magico', 'Bastón Mágico', 'boomerang', 'normal', 'Bastón Mágico Doble', 'spd'],
+        ['grito-de-combate', 'Grito de Combate', 'nova', 'psychic', 'Onda Explosiva', 'def'],
+        ['judia-magica', 'Judía Mágica', 'buff', 'grass']],
+      // </lote4>
     };
     const malLista = [];
     for (const [dex, at] of Object.entries(LISTA)) {
@@ -5947,14 +5956,15 @@ function multiversoChecks() {
       }
     }
     t('cada personaje aprende sólo su lista (poolFor() real, el inicial el primero): 7 de Agumon, 8 del Doom Slayer y 7 del Cacodemonio (validadas por Nico) y las del segundo lote (8 cada uno, 7 el Ojo de Cthulhu), cada uno con su nombre, su forma, su tipo, la escalera de mejoras de su forma y su evolución (Llama Bebé -> Mega Llama, Rifle de Plasma -> BFG 9000, Súper Escopeta -> Súper Escopeta Maestra...); los potenciadores, sin evolución',
-      !malLista.length && Object.keys(LISTA).length === 15 && MV.ATAQUES.length === 116, malLista);
+      !malLista.length && Object.keys(LISTA).length === 16 && MV.ATAQUES.length === 123, malLista);
     const nuevos = G.Moves.ALL.filter(x => !sin.Moves.BY_ID[x.id]).map(x => x.id);
     const enPool = Object.entries(G.Moves.POOL).filter(([, ids]) => nuevos.some(id => ids.includes(id))).map(([k]) => k);
     const otros = G.DEX.filter(p => !p.mv && G.Moves.poolFor(p).some(id => nuevos.includes(id))).map(p => p.dex);
     const ajenos = lista.flatMap(p => G.Moves.poolFor(p).filter(id => sin.Moves.BY_ID[id]).map(id => p.dex + ':' + id));
-    const deDos = nuevos.filter(id => MV.PERSONAJES.filter(p => p.pool.includes(id)).length !== 1);
+    // Las formas (formaDe: Goku Kaio-ken y Super Saiyan) comparten a propósito el pool de su base: no cuentan como otro personaje (A3 lo mira).
+    const deDos = nuevos.filter(id => MV.PERSONAJES.filter(p => !p.formaDe && p.pool.includes(id)).length !== 1);
     t(`los ${nuevos.length} ataques del Multiverso no entran en ningún pool de tipo ni los aprende ningún Pokémon (${G.DEX.length - lista.length} mirados), ninguno de los del Multiverso aprende un ataque Pokémon y cada uno de los suyos es de un solo personaje`,
-      nuevos.length === 116 && !enPool.length && !otros.length && !ajenos.length && !deDos.length, { enPool, otros: otros.slice(0, 5), ajenos, deDos });
+      nuevos.length === 123 && !enPool.length && !otros.length && !ajenos.length && !deDos.length, { enPool, otros: otros.slice(0, 5), ajenos, deDos });
     // Control: sin el gancho de poolFor() (moves.js), Agumon aprendería los de Fuego, Dragón y Normal.
     const sinPool = montar({ cambia: { 'js/data/moves.js': s => s.replace(/^\s*if \(mon\.pool\)[^\n]*MOD nico[^\n]*\n/m, '') } }).G;
     const ctrl = sinPool.Moves.poolFor(sinPool.DEX_BY[10001]);
@@ -5996,7 +6006,7 @@ function multiversoChecks() {
       return !(m.lvl === m.def.maxLvl && info && info.ready && info.name === e[0] && G.Moves.evolve(m) && m.name === e[0] && m.evolved);
     });
     t('suben de nivel con su escalera (instance() real: nivel 3 distinto del 1, sin la escalera dentro) y los 67 que evolucionan llegan al máximo y evolucionan (evoInfo() y evolve() reales)',
-      inst.lvl === 3 && !('ups' in inst) && JSON.stringify(inst) !== JSON.stringify(base) && nuevos.filter(id => G.Moves.EVO[id]).length === 101 && !evos.length, evos);
+      inst.lvl === 3 && !('ups' in inst) && JSON.stringify(inst) !== JSON.stringify(base) && nuevos.filter(id => G.Moves.EVO[id]).length === 107 && !evos.length, evos);
   } catch (e) { t('datos del Multiverso', false, String(e && e.stack || e)); }
   // ---- A2. Sus ataques en partida: las cartas de subida de nivel, la mejora «Repertorio» y cómo se ven ----
   try {
@@ -6031,6 +6041,90 @@ function multiversoChecks() {
       v.moto.melee === 'claw' && v.moto.pal === 'steel' && v.mordisco.melee === 'jaws' && v.cohete.proj === 'rock' && v.cohete.trail === 'ember' && v.cohete.pal === 'fire' &&
       v.mirada.beam === 'shadow' && v.cabezazo.proj === 'star' && !v.cabezazo.melee && v.ascuas.proj === 'fire' && v.ascuas.trail === 'ember' && v.garra.melee === 'claw', v);
   } catch (e) { t('ataques en partida', false, String(e && e.stack || e)); }
+  // ---- A3. Las formas de Goku (20-11-2026): evoluciones de especie que sólo se alcanzan en la partida ----
+  // Goku (10018) -> Goku Kaio-ken (10030) -> Goku Super Saiyan (10031): entradas de PERSONAJES con `formaDe` y `nivel`.
+  // Sin hojas aún no se cargan; para probar lo que harán con ellas, se les da la geometría de Ash (META de 10013).
+  try {
+    const FORMAS = MV.PERSONAJES.filter(p => p.formaDe), base = MV.PERSONAJES.find(p => p.dex === 10018);
+    t('Goku y sus formas en PERSONAJES: Goku Kaio-ken (10030, sale de 10018, nivel 16, rareza 4) y Goku Super Saiyan (10031, sale de 10030, nivel 40, rareza 5); del Multiverso (mv, gen 10), ni legendarias ni iniciales, con el pool y el inicial de Goku (Kamehameha)',
+      !!base && base.start === 'kamehameha' && FORMAS.map(f => [f.dex, f.name, f.formaDe, f.nivel, f.rarity].join()).join('|') === '10030,Goku Kaio-ken,10018,16,4|10031,Goku Super Saiyan,10030,40,5' &&
+      FORMAS.every(f => f.mv === true && f.gen === 10 && !f.leg && !f.starter && f.start === base.start && JSON.stringify(f.pool) === JSON.stringify(base.pool)), FORMAS.map(f => f.dex));
+    const mvf = (G0, d) => FORMAS.find(f => f.dex === d);
+    t('sólo el Super Saiyan supera a Mewtwo (decisión de Nico): en vida, velocidad, ataque y bst; el Kaio-ken, por debajo en todo',
+      (() => { const mew = MVG.DEX_BY[150], kk = mvf(MVG, 10030), ss = mvf(MVG, 10031); return ['hp', 'spd', 'atk', 'bst'].every(k => ss[k] > mew[k] && kk[k] < mew[k] && base[k] < kk[k]); })());
+    // Hoy (sin hojas): nada de Goku se carga, ni sus formas, ni su G.EVO, y nada se rompe. Con las hojas reales esto ya no aplica.
+    const hoy = montar({ extra: ['js/systems/evo-partida.js'] }).G;
+    t('sin hojas (sin META) Goku y sus formas no se cargan: ni G.DEX, ni G.DEX_BY, ni G.EVO / G.EVO_NIVEL; la evolución en partida de un Pokémon, igual',
+      !!hoy.SPRITE_META[10018] || (![10018, 10030, 10031].some(d => hoy.DEX_BY[d] || hoy.EVO[d] || hoy.EVO_NIVEL[d]) && hoy.DEX.length === MVG.DEX.length &&
+        hoy.EvoPartida.disponibles({ dex: 4, level: 8 }).join() === '5'), { conHojas: !!hoy.SPRITE_META[10018] });
+    // Con hojas: las reales desde el 20-11-2026; sin ellas, simuladas con la geometría de Ash.
+    const yaHojas = /^ {4}10018: \{/m.test(rd('js/data/multiverso.js'));
+    const geo = (/^ {4}10013: (\{.*\}),$/m.exec(rd('js/data/multiverso.js')) || [])[1];
+    const conHojas = s => yaHojas ? s : s.replace('  const META = {\n', `  const META = {\n    10018: ${geo}, 10030: ${geo}, 10031: ${geo},\n`);
+    const cm = montar({ extra: ['js/systems/levelup.js', 'js/systems/evo-partida.js', 'js/systems/gacha.js'], cambia: { 'js/data/multiverso.js': conHojas } });
+    const G = cm.G, M2 = G.MULTIVERSO, E = G.EvoPartida;
+    sembrar(cm, 29);
+    t('con hojas: Goku en G.DEX (banner y colección); sus formas sólo en G.DEX_BY y G.SPRITE_META (ni en G.DEX ni en lista(): ni banner, ni colección, ni sus recuentos, ni enemigos, ni «Desbloquear todos»)',
+      !!geo && G.DEX.some(p => p.dex === 10018) && M2.lista().some(p => p.dex === 10018) && !G.DEX.some(p => p.formaDe) && !M2.lista().some(p => p.formaDe) &&
+      [10030, 10031].every(d => G.DEX_BY[d] && G.DEX_BY[d].formaDe && G.SPRITE_META[d]) && G.DEX.length === MVG.DEX.length + (yaHojas ? 0 : 1));
+    t('con hojas: G.EVO 10018 -> [10030] y 10030 -> [10031], G.EVO_NIVEL 16 y 40 (en partida, ×0,5: niveles 8 y 20), sin tocar js/data/evolutions.js (generado)',
+      JSON.stringify(G.EVO[10018]) === '[10030]' && JSON.stringify(G.EVO[10030]) === '[10031]' && !G.EVO[10031] && G.EVO_NIVEL[10030] === 16 && G.EVO_NIVEL[10031] === 40 &&
+      E.nivelDe(10030) === 8 && E.nivelDe(10031) === 20 && !/10018|10030|10031/.test(rd('js/data/evolutions.js')));
+    vm.runInContext(conHojas(rd('js/data/multiverso.js')), cm, { filename: 'js/data/multiverso.js (otra vez)' });
+    t('cargar multiverso.js dos veces no duplica las formas ni sus entradas de G.EVO', JSON.stringify(G.EVO[10018]) === '[10030]' && JSON.stringify(G.EVO[10030]) === '[10031]' && G.DEX.filter(p => p.dex === 10018).length === 1);
+    const pl = (dex, level) => ({ dex, level, mon: G.DEX_BY[dex] });
+    const disp = [pl(10018, 7), pl(10018, 8), pl(10030, 19), pl(10030, 20), pl(10031, 50)].map(p => E.disponibles(p).join() || '-').join(' ');
+    t('evolución en partida (disponibles() real): la carta de Goku Kaio-ken sale desde el nivel 8 y la de Goku Super Saiyan desde el 20; tras el Super Saiyan, nada',
+      disp === '- 10030 - 10031 -', disp);
+    // evolucionar() real, con lo justo de sprites, efectos y cooperativo.
+    const nop = () => {}, real = { Sprites: G.Sprites };
+    Object.assign(G, { Sprites: Object.assign({}, G.Sprites, { Animator: function () {}, preload: nop }),
+      FX: { ring: nop, burst: nop }, Camera: { sees: () => false }, Audio: { sfx: nop }, Spawner: { say: nop }, Coop: { active: false } });
+    const yo = { mon: G.DEX_BY[10018], dex: 10018, shiny: false, maxHp: 108, hp: 100, x: 0, y: 0 };
+    const ok1 = E.evolucionar(yo, 10030), kk = { types: yo.mon.types.join(), atk: yo.baseAtk, spd: yo.baseSpd, maxHp: yo.maxHp, hp: yo.hp };
+    const ok2 = E.evolucionar(yo, 10031), ss = { types: yo.mon.types.join(), atk: yo.baseAtk, spd: yo.baseSpd, maxHp: yo.maxHp, hp: yo.hp };
+    G.Sprites = real.Sprites;
+    t('evolucionar() real: Goku -> Kaio-ken (Lucha / Fuego, ×1,32, 124, vida +4) -> Super Saiyan (Lucha / Dragón, ×1,58, 136, vida +10)',
+      ok1 && ok2 && kk.types === 'fighting,fire' && kk.atk === 1.32 && kk.spd === 124 && kk.maxHp === 112 && kk.hp === 104 &&
+      ss.types === 'fighting,dragon' && ss.atk === 1.58 && ss.spd === 136 && ss.maxHp === 122 && ss.hp === 114 && yo.dex === 10031, { kk, ss });
+    // Al subir de nivel ya evolucionado, sigue aprendiendo los de Goku (poolFor() de moves.js y offer() de levelup.js reales).
+    const jugador = p => ({ mon: p, dex: p.dex, level: 1, slots: [[0]], maxMoves: 4, statsTaken: {}, moves: [G.Moves.instance(G.Moves.startFor(p), 1)],
+      hasMove(id) { return this.moves.some(m => m.id === id); } });
+    const malas = [];
+    for (const d of [10030, 10031]) {
+      const vistos = new Set();
+      for (let i = 0; i < 400; i++) for (const k of G.LevelUp.offer(jugador(G.DEX_BY[d]))) if (k.type === 'new') vistos.add(k.key.slice(4));
+      if (JSON.stringify(G.Moves.poolFor(G.DEX_BY[d])) !== JSON.stringify(base.pool) || G.Moves.startFor(G.DEX_BY[d]) !== 'kamehameha' ||
+        [...vistos].sort().join() !== base.pool.filter(id => id !== base.start).sort().join()) malas.push({ d, vistos: [...vistos] });
+    }
+    t('Kaio-ken y Super Saiyan aprenden los ataques de Goku al subir de nivel (poolFor() y offer() reales, 400 subidas cada uno), sólo esos y todos', !malas.length, malas);
+    // El gacha real: 10.000 tiradas en el Multiverso (con rarezas 4 y 5 en las tiradas, que las formas tienen).
+    const Ga = G.Gacha, save = { tickets: { t1: 0, t10: 10000 }, owned: {}, shiny: {}, coins: 0, stats: {}, pity: {} }, res = [];
+    for (let i = 0; i < 1000; i++) res.push(...Ga.pull(save, 10, 10));
+    const goku = res.filter(x => x.dex === 10018), repes = goku.filter(x => !x.isNew);
+    t(`10.000 tiradas del Multiverso con las hojas: ninguna forma (sale Goku ${goku.length} veces, ${repes.length} repetido); un Goku repetido no desbloquea sus formas y da sus Pokémonedas (300, 900 un shiny)`,
+      res.length === 10000 && !res.some(x => G.DEX_BY[x.dex].formaDe) && goku.length > 400 && repes.length > 300 &&
+      repes.every(x => !x.evo && x.refund === (x.shiny ? 900 : 300)) && !save.owned[10030] && !save.owned[10031] && !save.shiny[10030] && !save.shiny[10031],
+      { goku: goku.length, repes: repes.length, malos: repes.filter(x => x.evo || x.refund !== (x.shiny ? 900 : 300)).slice(0, 3) });
+    const evoR = [false, true].map(sh => G.MODS.evolucionDeRepetido({ owned: { 10018: { at: 1 }, 10030: { at: 1 } }, shiny: { 10018: { at: 1 } } }, sh ? 10018 : 10030, sh));
+    // Control: sin la exclusión de mods.js (evolucionDeRepetido), un Goku repetido sí daría Goku Kaio-ken.
+    const ctl = montar({ extra: ['js/systems/gacha.js'], cambia: { 'js/data/multiverso.js': conHojas, 'js/core/mods.js': s => s.replace(' && !G.DEX_BY[d].formaDe', '') } }).G;
+    const ctlEvo = ctl.MODS.evolucionDeRepetido({ owned: { 10018: { at: 1 } }, shiny: {} }, 10018, false);
+    t('evolucionDeRepetido(): ni un Goku repetido (normal o shiny) ni un Kaio-ken dan una forma; control sin la exclusión de mods.js: daría 10030 (la prueba sabe verlo)',
+      evoR.every(x => x === 0) && ctlEvo === 10030, { evoR, ctlEvo });
+    // Sin js/data/evolutions.js (G.EVO), las formas se cargan pero no crean un G.EVO (todo como el proyecto base).
+    const sinEvo = montar({ cambia: { 'js/data/multiverso.js': conHojas, 'js/data/evolutions.js': () => '' } }).G;
+    t('sin js/data/evolutions.js: las formas no crean G.EVO (no se activa la evolución por repetido ni en partida)', !sinEvo.EVO && !!sinEvo.DEX_BY[10030]);
+    // La ficha de Goku en la colección: la nota de sus formas bajo sus ataques (G.MULTIVERSO.ficha real con un DOM mínimo).
+    const hecho = [];
+    cm.document = { querySelector: q => (q === '#dex-detail .move-icons' ? { after: e => hecho.push(e) } : null), createElement: () => ({}) };
+    G.DB = { save: { owned: { 10018: { at: 1 } } } };
+    M2.ficha(10018); M2.ficha(10001);
+    G.DB.save.owned = {}; M2.ficha(10018);
+    t('ficha de Goku (si lo tienes): «En la partida evoluciona: Goku Kaio-ken (nivel 8) → Goku Super Saiyan (nivel 20)»; Agumon, nada; sin tenerlo, la nota de siempre',
+      hecho.length === 1 && hecho[0].className === 'mv-formas' &&
+      hecho[0].innerHTML === 'En la partida evoluciona: <b class="gold">Goku Kaio-ken</b> (nivel 8) → <b class="gold">Goku Super Saiyan</b> (nivel 20)', hecho.map(h => h.innerHTML));
+  } catch (e) { t('formas de Goku', false, String(e && e.stack || e)); }
   // ---- B. Nunca de enemigo: elencos, jefes, hordas y el Pokémon perdido ----
   try {
     const enemigos = (cambia = {}) => {
@@ -6171,7 +6265,7 @@ function multiversoChecks() {
     t('el cartel del Multiverso dice que cada tirada cuesta un ticket ×10', rates.includes('· Cada tirada cuesta un ticket ×10, el lila (la ×10, diez).<br>'), rates);
     t('pestaña del gacha: «Otros mundos» en vez de «Gen 10» desde que se abre el gacha (en Kanto)', enKanto === 'Otros mundos', enKanto);
     t('cartel del Multiverso: título, sus sagas sin repetir, sin el pity de la legendaria y los tres primeros de destacados',
-      els['banner-title'].textContent === 'Multiverso' && els['banner-desc'].textContent === 'Personajes de otros mundos que se cuelan en el enjambre: Digimon, DOOM, Kirby, Zelda, Metroid, Pac-Man, Castlevania, Terraria, Halo, God of War, Pokémon (anime).' &&
+      els['banner-title'].textContent === 'Multiverso' && els['banner-desc'].textContent === 'Personajes de otros mundos que se cuelan en el enjambre: Digimon, DOOM, Kirby, Zelda, Metroid, Pac-Man, Castlevania, Terraria, Halo, God of War, Pokémon (anime), Dragon Ball.' &&
       els['gacha-pity'].textContent === '' && [10001, 10002, 10003].every(d => els['gacha-feat'].children.some(x => x.dex === d)), { titulo: els['banner-title'].textContent, desc: els['banner-desc'].textContent });
     const pct = +(100 / G.MULTIVERSO.lista().length).toFixed(2) + '%';
     // Con multiversoRepetidoPorCoste apagado (o sin el ticket lila), el cartel vuelve a decir 30.
@@ -6213,7 +6307,11 @@ function multiversoChecks() {
       '· Un repetido da 300 Pokémonedas (un shiny repetido, el triple).': '· A duplicate gives 300 PokéCoins (a shiny duplicate, triple).',
       '· Nunca salen de enemigos: sólo se consiguen aquí.': '· They never show up as enemies: you can only get them here.',
       'Sólo sale en el banner del Multiverso, en el gacha.': 'Only in the Multiverse banner of the gacha.',
-      'Escupe una bola de fuego grande al enemigo más cercano. Quema.': 'Spits a big fireball at the nearest enemy. Burns.' };
+      'Escupe una bola de fuego grande al enemigo más cercano. Quema.': 'Spits a big fireball at the nearest enemy. Burns.',
+      // Las formas de Goku (20-11-2026): sus nombres, la carta dorada, el aviso y la nota de la ficha (por trozos de texto, como en el DOM).
+      'Goku Kaio-ken': 'Kaio-ken Goku', 'Goku Super Saiyan': 'Super Saiyan Goku', 'Evolucionar en Goku Super Saiyan': 'Evolve into Super Saiyan Goku',
+      '¡Goku Kaio-ken ha evolucionado en Goku Super Saiyan!': 'Kaio-ken Goku evolved into Super Saiyan Goku!',
+      'En la partida evoluciona:': 'Evolves during the run:', '(nivel 8) →': '(level 8) →', '(nivel 20)': '(level 20)', 'Empezar evolucionado en': 'Start evolved into' };
     const mal = Object.entries(casos).filter(([es, en]) => EN(es) !== en).map(([es]) => [es, EN(es)]);
     t('inglés (i18n.js real): el banner, la pestaña, la descripción, las notas de las probabilidades, la ficha y el ataque', !mal.length, mal);
     // Cada ataque del Multiverso: su nombre, su descripción, su evolución y la carta dorada de evolucionar («X → Y»).
@@ -6223,7 +6321,8 @@ function multiversoChecks() {
       'Pikachu', 'Charmander', 'Charizard', 'Charmander → Charizard', 'Squirtle', 'Bulbasaur', 'Pidgeotto', 'Pidgeot', 'Pidgeotto → Pidgeot',
       'Froakie', 'Greninja', 'Froakie → Greninja', 'Snorlax',
       'Cyndaquil', 'Quilava', 'Cyndaquil → Quilava', 'Totodile', 'Chikorita', 'Bayleef', 'Chikorita → Bayleef', 'Noctowl', 'Phanpy', 'Donphan', 'Phanpy → Donphan',
-      'Heracross', 'Treecko', 'Sceptile', 'Treecko → Sceptile', 'Taillow', 'Swellow', 'Taillow → Swellow', 'Corphish', 'Torkoal', 'Snorunt', 'Glalie', 'Snorunt → Glalie']);
+      'Heracross', 'Treecko', 'Sceptile', 'Treecko → Sceptile', 'Taillow', 'Swellow', 'Taillow → Swellow', 'Corphish', 'Torkoal', 'Snorunt', 'Glalie', 'Snorunt → Glalie',
+      /* lote4 */ 'Kamehameha', 'Super Kamehameha', 'Kamehameha → Super Kamehameha']);
     const sinIngles = textos.filter(x => (!IGUALES.has(x) && EN(x) === x) || /[áéíóúñ¿¡]/i.test(EN(x).replace(/Poké/g, 'Poke')));   // «Poké Ball» y «Pokémon» llevan tilde también en inglés
     const cartas = { 'Rifle de Plasma → BFG 9000': 'Plasma Rifle → BFG 9000', 'Granada → Granada de Racimo': 'Frag Grenade → Cluster Grenade',
       'Súper Escopeta → Súper Escopeta Maestra': 'Super Shotgun → Super Shotgun Mastery', 'Torbellino → Gran Tornado': 'Whirlwind → Great Tornado' };
@@ -6288,7 +6387,8 @@ function multiversoChecks() {
       rd('js/data/lang-en-mod.js').includes("'Cambia de ataque: ¡puedes tener a todos tus Pokémon fuera a la vez!': 'Switch attacks: you can have all your Pokémon out at once!'"));
   } catch (e) { t('los Pokémon de Ash', false, String(e && e.stack || e)); }
   // Los que aún no tienen hojas (META) no se cargan: se avisa, sin fallar, hasta que montar.py las haga.
-  if (MV) { const sinHojas = MV.PERSONAJES.filter(p => !MV.lista().some(x => x.dex === p.dex)).map(p => p.dex + ' ' + p.name); if (sinHojas.length) warn('multiverso: sin hojas todavía (no se cargan ni salen en el juego): ' + sinHojas.join(', ')); }
+  // Una forma (formaDe) nunca está en lista() (no va en G.DEX): cargada es estar en G.DEX_BY.
+  if (MV) { const DB = MVG && MVG.DEX_BY; const sinHojas = MV.PERSONAJES.filter(p => p.formaDe ? !(DB && DB[p.dex]) : !MV.lista().some(x => x.dex === p.dex)).map(p => p.dex + ' ' + p.name); if (sinHojas.length) warn('multiverso: sin hojas todavía (no se cargan ni salen en el juego): ' + sinHojas.join(', ')); }
   const failed = r.filter(x => !x[1]);
   if (!failed.length) ok(`multiverso: ${r.length} casos bien`);
   for (const [name, , detail] of failed) bad(`multiverso: ${name}${detail !== undefined ? ' · ' + (typeof detail === 'string' ? detail : JSON.stringify(detail)) : ''}`);
@@ -6859,6 +6959,15 @@ async function inicioDevChecks() {
   G.DB.save.inicioDev[4].activo = false;
   const off = nuevoPl();
   t('con la casilla apagada, la run como siempre (y «todos a la vez», que es global, sigue)', I.aplicar(off, G.DEX_BY[4], false) === 0 && off.level === 1 && off.moves.length === 1 && off.todosALaVez === true);
+  // «Empezar evolucionado en» (20-11-2026, para las formas de Goku): una de su línea (G.EVO), sólo en solitario.
+  const fo = [6, 4, 25, '5'].map(f => I.normalizar({ forma: f }, 4).forma);
+  t('normalizar: la forma inicial sólo si es de su línea y no es él (Charizard sí; Charmander o Pikachu, 0)', fo.join() === '6,0,0,5', fo);
+  const evs = [], evReal = G.EvoPartida;
+  G.EvoPartida = { evolucionar: (p, d) => evs.push([p.dex, d]) };
+  Object.assign(G.DB.save.inicioDev[4], { activo: true, forma: 6 });
+  I.aplicar(nuevoPl(), G.DEX_BY[4], false); I.aplicar(nuevoPl(), G.DEX_BY[4], true);
+  G.EvoPartida = evReal; G.DB.save.inicioDev[4].forma = 0;
+  t('aplicar(): con forma, en solitario empieza ya evolucionado (G.EvoPartida.evolucionar, como la carta dorada); en grupo, no', JSON.stringify(evs) === '[[4,6]]', evs);
   t('ninguna marca de G.Guard: estas runs cuentan para el ranking (decisión de Nico, 04-11-2026)', !flags.length && !/Guard\.flag/.test(rd('js/ui/inicio-dev.js')));
   G.DevMenu.permitidoYa = permitidoYaReal;
   // C. guard.js real: el aviso «nivel» con el margen del nivel de serie y, sin él, como upstream.

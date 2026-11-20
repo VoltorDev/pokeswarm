@@ -187,6 +187,26 @@ def vario_ash(c):
         return rgb(215 / 360, s, v)
     return c
 
+def vario_reglas(reglas):
+    """Variocolor por reglas (cuarto lote, lote4/propuestas/<clave>.json): cada regla dice qué colores cambia (por tono en
+    grados, saturación y valor; un tono «desde > hasta» da la vuelta por el 0) y a qué (tono nuevo en grados; saturación y
+    valor, multiplicados). Se aplica la primera regla que encaja; si ninguna, el color se queda."""
+    def f(c):
+        h, s, v = hsv(c)
+        for r in reglas:
+            si, a = r['si'], r['a']
+            if 'h' in si:
+                lo, hi = si['h'][0] / 360, si['h'][1] / 360
+                if not (lo <= h <= hi if lo <= hi else (h >= lo or h <= hi)):
+                    continue
+            if 's' in si and not (si['s'][0] <= s <= si['s'][1]):
+                continue
+            if 'v' in si and not (si['v'][0] <= v <= si['v'][1]):
+                continue
+            return rgb(a['h'] / 360 if 'h' in a else h, s * a.get('s', 1), v * a.get('v', 1))
+        return c
+    return f
+
 # mov: 'anda' (sus pasos de PixelLab o de pasos.py), 'flota' (se mece VUELO px sobre el suelo), 'contonea' (de lado a lado),
 # 'desliza' (sube y baja 1 px) o 'rueda' (sus pasos dibujados). disparo: 1 se impulsa hacia delante al disparar,
 # -1 retrocede. propias: {Anim: duraciones} de las animaciones dibujadas aparte (<Anim>-<dirección>.png).
@@ -211,6 +231,19 @@ PJ = {
     # Kratos, sin PixelLab: imagen de FLUX (Workers AI) -> 3D con TRELLIS.2 -> rotar3d.py -> pixelar.py; pasos de pasos.py.
     'kratos':  {'dex': 10012, 'mov': 'anda', 'sombra': 1, 'disparo': 1, 'vario': vario_kratos},
     'ash':     {'dex': 10013, 'mov': 'anda', 'sombra': 1, 'disparo': 1, 'vario': vario_ash},   # como Kratos (23-10-2026)
+    # <lote4> Cuarto lote (14-11-2026): imagen de FLUX -> TRELLIS.2 -> rotar3d.py -> pixelar.py, pasos de pasos.py
+    'goku': {'dex': 10018, 'mov': 'anda', 'sombra': 1, 'disparo': 1,   # Goku: Goku con el gi azul de Dragon Ball GT, que recuerda al primero que llevó de niño (wiki de 
+                'vario': vario_reglas([{'si': {'h': [330, 25], 's': [0.72, 1], 'v': [0.15, 1]}, 'a': {'h': 215, 's': 0.9}}]),
+                'propias': {'Attack': [2, 2, 2, 2, 3, 3, 2, 2], 'Shoot': [2, 3, 4, 4, 3, 4]}},
+    'goku-kaioken': {'dex': 10030, 'mov': 'anda', 'sombra': 1, 'disparo': 1,   # Goku Kaio-ken (forma de Goku): Kaio-ken con el gi azul de Dragon Ball GT, el mismo cambio que el vari
+                'vario': vario_reglas([{'si': {'h': [350, 5], 's': [0.8, 1], 'v': [0.15, 1]}, 'a': {'h': 215, 's': 0.9}}, {'si': {'h': [330, 339], 's': [0.8, 1], 'v': [0.1, 1]}, 'a': {'h': 225, 's': 0.9}}]),
+                'propias': {'Attack': [2, 2, 2, 2, 3, 3, 2, 2], 'Shoot': [2, 3, 4, 4, 3, 4]},
+                'limpias': 'limpias'},
+    'goku-ssj': {'dex': 10031, 'mov': 'anda', 'sombra': 1, 'disparo': 1,   # Goku Super Saiyan (forma de Goku): Goku Supersaiyano Azul (Super Saiyan Blue; en el wiki en español, Supe
+                'vario': vario_reglas([{'si': {'h': [36, 62], 's': [0.8, 1], 'v': [0.99, 1]}, 'a': {'h': 190}}, {'si': {'h': [36, 62], 's': [0.3, 1], 'v': [0.45, 1]}, 'a': {'h': 212}}, {'si': {'h': [150, 190], 's': [0.35, 1], 'v': [0.3, 1]}, 'a': {'h': 205}}]),
+                'propias': {'Attack': [2, 2, 2, 2, 3, 3, 2, 2], 'Shoot': [2, 3, 4, 4, 3, 4]},
+                'limpias': 'limpias'},
+    # </lote4>
 }
 VUELO = 7   # píxeles de arte entre el suelo y el que flota
 
@@ -380,6 +413,13 @@ class Montaje:
                 if d not in self.andar and lado in self.andar:
                     self.andar[d] = self.andar[lado]
             assert all(d in self.andar for d in DIRS), (clave, sorted(self.andar))
+        # Rotaciones sin efectos (PJ[clave]['limpias'] = subcarpeta de fuentes/<clave>/ con rot-*.png): las usan Hurt y
+        # Faint, para que un aura dibujada en las rotaciones no siga al caer derrotado (Goku Kaio-ken y Super Saiyan).
+        self.rot_limpia = self.rot
+        if self.cfg.get('limpias'):
+            cl = os.path.join(carpeta, self.cfg['limpias'])
+            self.rot_limpia = {d: ImageOps.mirror(self._abrir(cl, 'rot-' + ESPEJO[d])) if ESPEJO.get(d) else self._abrir(cl, 'rot-' + d)
+                               for d in DIRS}
         # Los pies: la fila más baja de las rotaciones, en la celda de 32 (el variocolor dibujado, los del normal).
         self.pies = pies if pies is not None else max(fondo(self.rot[d]) for d in DIRS)
 
@@ -409,7 +449,7 @@ class Montaje:
         return f
 
     def tumbado(self, mc, d):
-        t = tumbar(self.rot[d], d)
+        t = tumbar(self.rot_limpia[d], d)
         f = Image.new('RGBA', (mc.w, mc.h), (0, 0, 0, 0))
         f.alpha_composite(t, ((mc.w - t.width) // 2, mc.suelo + 1 - t.height))
         return f
@@ -450,12 +490,13 @@ class Montaje:
         sg = self.cfg['disparo']
         A['Shoot'] = (mv, [[self.poner(mv, R[d], *vec(d, sg * k)) for k in [0, 1, 2, 1, 0]] for d in DIRS], [2, 2, 3, 2, 2])
         A['Charge'] = (quieto, [[self.poner(quieto, respirar(R[d]), 0, -1 if fl else 0) for _ in range(2)] for d in DIRS], [4, 4])
-        A['Hurt'] = (mv, [[self.poner(mv, R[d], *vec(d, -2)), self.poner(mv, R[d], *vec(d, -1))] for d in DIRS], [2, 8])
+        RL = self.rot_limpia
+        A['Hurt'] = (mv, [[self.poner(mv, RL[d], *vec(d, -2)), self.poner(mv, RL[d], *vec(d, -1))] for d in DIRS], [2, 8])
         if fl:
-            A['Faint'] = (mv, [[self.poner(mv, R[d]), self.poner(mv, R[d], 0, VUELO // 2), self.poner(mv, R[d], 0, VUELO), self.tumbado(mv, d)]
+            A['Faint'] = (mv, [[self.poner(mv, RL[d]), self.poner(mv, RL[d], 0, VUELO // 2), self.poner(mv, RL[d], 0, VUELO), self.tumbado(mv, d)]
                                for d in DIRS], [8, 6, 6, 10])
         else:
-            A['Faint'] = (mv, [[self.poner(mv, R[d]), self.poner(mv, respirar(R[d]), 0, 1), self.tumbado(mv, d), self.tumbado(mv, d)] for d in DIRS],
+            A['Faint'] = (mv, [[self.poner(mv, RL[d]), self.poner(mv, respirar(RL[d]), 0, 1), self.tumbado(mv, d), self.tumbado(mv, d)] for d in DIRS],
                           [8, 12, 4, 10])
         # Las dibujadas aparte sustituyen a las de código (con su marco: con margen las que se desplazan). Las de
         # animar3d.py + pixelar.py --anim (Attack-<dirección>.png y Shoot-<dirección>.png) se usan solas si están.

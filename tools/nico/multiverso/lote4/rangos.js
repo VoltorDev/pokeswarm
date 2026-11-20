@@ -18,7 +18,10 @@ const BASE = ['js/core/util.js', 'js/core/mods.js', 'js/data/pokedex.js', 'js/da
 
 function montar(con) {
   const c = { console }; c.window = c; c.G = {}; vm.createContext(c);
-  for (const f of [...BASE, ...(con ? ['js/data/multiverso.js'] : [])]) vm.runInContext(rd(f), c, { filename: f });
+  // Sin lo que integrar.js ya metió del cuarto lote (entre <lote4> y </lote4>, <lote4-ataques> y </lote4-ataques>): si no,
+  // tras integrar, sus ids y nombres saldrían como «ya usados» y validar.js rechazaría repetir la integración.
+  const sinLote = s => s.replace(/ *\/\/ <lote4(-ataques)?>[\s\S]*?\/\/ <\/lote4(-ataques)?>\n?/g, '');
+  for (const f of [...BASE, ...(con ? ['js/data/multiverso.js'] : [])]) vm.runInContext(f === 'js/data/multiverso.js' ? sinLote(rd(f)) : rd(f), c, { filename: f });
   return c.G;
 }
 
