@@ -396,6 +396,13 @@ G.I18n.add({
   // Regalo del parche de noviembre (G.MODS.regalosTodos)
   '¡Parche nuevo! Llega Ash al Multiverso y desde hoy los tickets que ganáis cuentan ×3. Tomad 10 tickets ×10 de regalo':
     'New patch! Ash joins the Multiverse and from today every ticket you earn counts ×3. Here are 10 ×10 tickets as a gift',
+  // Llega Goku (G.MODS.regalosTodos) y el regalo a sus votantes (G.MODS.regaloVoto)
+  '¡Ha llegado Goku al Multiverso! Y en partida evoluciona: Goku Kaio-ken a nivel 8 y Goku Super Saiyan a nivel 20':
+    'Goku has arrived in the Multiverse! And he evolves during a run: Goku Kaio-ken at level 8 and Goku Super Saiyan at level 20',
+  '¡Ha llegado Goku! Gracias por votarlo: te lo regalamos y ya está en tu colección. En partida evoluciona en Goku Kaio-ken (nivel 8) y Goku Super Saiyan (nivel 20)':
+    'Goku has arrived! Thanks for voting for him: he is our gift to you and already in your collection. During a run he evolves into Goku Kaio-ken (level 8) and Goku Super Saiyan (level 20)',
+  '¡Ha llegado Goku! Gracias por votarlo: como ya lo tenías, te regalamos un ticket ×10. En partida evoluciona en Goku Kaio-ken (nivel 8) y Goku Super Saiyan (nivel 20)':
+    'Goku has arrived! Thanks for voting for him: since you already had him, here is a ×10 ticket as a gift. During a run he evolves into Goku Kaio-ken (level 8) and Goku Super Saiyan (level 20)',
   // El PokéCasino (js/systems/casino.js y su pantalla en dev.html)
   'PokéCasino': 'PokéCasino', 'Ruleta de Pokémonedas': 'PokéCoin roulette',
   'Rojo, negro o el 0. Rojo y negro pagan 1 a 1; el 0, 35 a 1.': 'Red, black or 0. Red and black pay 1 to 1; 0 pays 35 to 1.',

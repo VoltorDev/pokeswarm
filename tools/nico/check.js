@@ -472,6 +472,7 @@ const HOOKS = [
   ['js/ui/menu.js', /G\.DB\.commit\(\);\s*if \(G\.Social && G\.Social\.refreshMember\) G\.Social\.refreshMember\(\);\s*\/\/ MOD nico/, 'cooperativo: al cambiar de compañero en una sala, los demás lo ven'],
   ['js/systems/combat.js', /if \(needsTarget\(m\) && !\(pl\.target && G\.U\.dist\(pl\.x, pl\.y, pl\.target\.x, pl\.target\.y\) <= \(G\.MODS && G\.MODS\.alcanceGolpe \? G\.MODS\.alcanceGolpe\(m, pl\.target, reach\(m\)\) : reach\(m\)\)\)\) \{\s*\/\/ MOD nico/, 'cuerpo a cuerpo: sólo se lanza si el golpe llega al blanco'],
   ['js/game.js', /\/\/ MOD nico: regalo «buen humor», una vez por cuenta\r?\n\s*if \(G\.MODS && G\.MODS\.darRegalosTodos\) \{ const t = G\.MODS\.darRegalosTodos\(G\.DB\.save\); if \(t\.length\) \{ G\.DB\.commit\(true\); G\.UI\.toast\([^\n]*\/\/ MOD nico/, 'regalos para todos: afterLogin() los da una vez y avisa, tras el «buen humor»'],
+  ['js/game.js', /if \(G\.MODS && G\.MODS\.darRegaloVoto\) G\.MODS\.darRegaloVoto\(G\.DB\.save\)\.then\([^\n]*G\.UI\.toast\(G\.T\(t\)[^\n]*\/\/ MOD nico/, 'regalo por voto: afterLogin() lo da y avisa'],
   ['js/game.js', /if \(G\.MODS && G\.MODS\.darRegalosCuenta\) G\.MODS\.darRegalosCuenta\(G\.DB\.save, G\.MODS\.nombresCuenta\(\)\)\.then\([^\n]*G\.T\(x\)[^\n]*\/\/ MOD nico/, 'regalos a una cuenta: afterLogin() los da y avisa'],
   ['js/ui/gacha-ui.js', /<span>1%<\/span><\/div>[\s\S]*?<\/p>`;\r?\n\s*if \(G\.MODS && G\.MODS\.notasGacha\) \$\('gacha-rates'\)\.innerHTML = G\.MODS\.notasGacha\(\$\('gacha-rates'\)\.innerHTML\);\s*\/\/ MOD nico/,
     'shiny ×1,5: el cartel del gacha (el «1%» de upstream sigue ahí y el gancho lo cambia después de pintarlo)'],
@@ -1146,24 +1147,24 @@ ${fHold}          };
 // ---------------- 10. gacha y tickets ----------------
 // Con el código real en node:vm: js/core/mods.js, trozos de js/game.js (bankTickets, syncTeam y la recogida de
 // tickets, tal cual), js/systems/progress.js con las misiones y los logros reales, y el importador.
+/** G.I18n.t real en inglés (i18n.js con lang-en.js y lang-en-mod.js), con un navegador mínimo. */
+function traductorIngles() {
+  const c = { console, navigator: { language: 'en-US', languages: ['en-US'] }, location: { pathname: '/' },
+    localStorage: { getItem: () => null, setItem() {} }, document: { documentElement: {} }, confirm: () => true, alert() {} };
+  c.CanvasRenderingContext2D = function () {};
+  c.CanvasRenderingContext2D.prototype = { fillText() {}, strokeText() {}, measureText() {} };
+  c.window = c; c.G = {};
+  vm.createContext(c);
+  for (const f of ['js/core/i18n.js', 'js/data/lang-en.js', 'js/data/lang-en-mod.js']) vm.runInContext(rd(f), c, { filename: f });
+  if (c.G.I18n.lang !== 'en') throw new Error('i18n.js no ha elegido inglés');
+  return c.G.I18n.t;
+}
 function gachaChecks() {
   console.log('10. Gacha y tickets (js/core/mods.js con el código real)');
   const r = [];
   const t = (name, cond, detail) => r.push([name, !!cond, detail]);
   const medidas = [];
   const nuevoMods = () => { const c = { console }; vm.createContext(c); c.G = {}; vm.runInContext(rd('js/core/mods.js'), c, { filename: 'js/core/mods.js' }); return c; };
-  /** G.I18n.t real en inglés (i18n.js con lang-en.js y lang-en-mod.js), con un navegador mínimo. */
-  function traductorIngles() {
-    const c = { console, navigator: { language: 'en-US', languages: ['en-US'] }, location: { pathname: '/' },
-      localStorage: { getItem: () => null, setItem() {} }, document: { documentElement: {} }, confirm: () => true, alert() {} };
-    c.CanvasRenderingContext2D = function () {};
-    c.CanvasRenderingContext2D.prototype = { fillText() {}, strokeText() {}, measureText() {} };
-    c.window = c; c.G = {};
-    vm.createContext(c);
-    for (const f of ['js/core/i18n.js', 'js/data/lang-en.js', 'js/data/lang-en-mod.js']) vm.runInContext(rd(f), c, { filename: f });
-    if (c.G.I18n.lang !== 'en') throw new Error('i18n.js no ha elegido inglés');
-    return c.G.I18n.t;
-  }
   const EN = traductorIngles();
 
   // ---- A. Tickets ganados ×ticketsMult ----
@@ -1422,7 +1423,7 @@ ${fTicket}      }
 
   // ---- B1. Regalos para todas las cuentas (02-11-2026): el del parche, 10 tickets ×10 una vez ----
   {
-    const M = nuevoMods().G.MODS, r = (M.regalosTodos || []).find(x => x.id === 'parche-2026-11');
+    const M = nuevoMods().G.MODS, r = (M.regalosTodos || []).find(x => x.id === 'parche-2026-11'); M.regalosTodos = [r];
     const s = { coins: 50, tickets: { t1: 30, t10: 2 } }, d1 = M.darRegalosTodos(s), d2 = M.darRegalosTodos(s);
     t('regalo del parche: 10 tickets ×10 (los lila) una vez, sin monedas ni shiny de más, y lo apunta; la segunda vez, nada',
       !!r && r.t10 === 10 && d1.length === 1 && d1[0] === r.texto && !d2.length && s.tickets.t10 === 12 && s.tickets.t1 === 30 && s.coins === 50 &&
@@ -1430,6 +1431,9 @@ ${fTicket}      }
     const v = {}, dv = M.darRegalosTodos(v);
     t('regalo del parche: también a una partida sin tickets todavía (cuenta nueva)', dv.length === 1 && v.tickets.t10 === 10 && v.tickets.t1 === 0, v);
     t('regalo del parche: el aviso tiene su inglés', EN(r.texto) !== r.texto && /10 ×10 tickets/.test(EN(r.texto)), EN(r.texto));
+    const g = (nuevoMods().G.MODS.regalosTodos || []).find(x => x.id === 'goku-2026-11'), sg = { tickets: { t1: 0, t10: 3 }, coins: 7 }, dg = nuevoMods().G.MODS.darRegalosTodos(sg);
+    t('aviso de Goku (21-11-2026): sale una vez a todas las cuentas, sin dar nada, nombra Kaio-ken y Super Saiyan y tiene su inglés',
+      !!g && dg.includes(g.texto) && sg.tickets.t10 === 3 + 10 && sg.coins === 7 && sg.regalos[g.id] > 0 && /Kaio-ken/.test(g.texto) && /Super Saiyan/.test(g.texto) && EN(g.texto) !== g.texto, { g, sg });
     M.regalosTodos = [];
     t('regalo del parche: con regalosTodos = [] no se da nada', !M.darRegalosTodos({ tickets: { t1: 0, t10: 0 } }).length && !M.darRegalosTodos(null).length);
   }
@@ -4681,7 +4685,7 @@ function companeroChecks() {
       conRegalo === 'música village, guarda, aviso 12000: Nico se ha despertado de buen humor. Estos tickets tienen posibilidad de shiny x3. Aquí tenéis algo de oro de regalo para mejorar Pokémons, o probar novedades, menú', conRegalo);
     const conTodos = caso({ partner: 4, mods: { conRegalosTodos: true } });
     t('afterLogin() real con los regalosTodos: guarda y avisa con su texto 12 s, y luego el menú como siempre',
-      conTodos === 'música village, guarda, aviso 12000: ¡Parche nuevo! Llega Ash al Multiverso y desde hoy los tickets que ganáis cuentan ×3. Tomad 10 tickets ×10 de regalo, menú', conTodos);
+      conTodos === 'música village, guarda, aviso 12000: ¡Parche nuevo! Llega Ash al Multiverso y desde hoy los tickets que ganáis cuentan ×3. Tomad 10 tickets ×10 de regalo · ¡Ha llegado Goku al Multiverso! Y en partida evoluciona: Goku Kaio-ken a nivel 8 y Goku Super Saiyan a nivel 20, menú', conTodos);
     const casos = { nueva: caso(), conTest: caso({ mods: { sinTest: false } }), conCompanero: caso({ partner: 4 }), sinFichero: caso({ sinFichero: true }), sinAjuste: caso({ mods: { sinTest: undefined } }) };
     t('afterLogin() real: sin compañero, «Elige a tu compañero» (nunca el test); con sinTest = false, el test; con compañero, el menú; si falta elegir-companero.js tras un merge, o el ajuste, el test de upstream',
       casos.nueva === 'música village, elegir' && casos.conTest === 'música village, test' && casos.conCompanero === 'música village, menú' &&
@@ -7075,6 +7079,24 @@ async function regalosCuentaChecks() {
   console.log('10 B3. Regalos a una cuenta (regalosCuenta): por la huella de su nombre, una vez');
   const r = [];
   const t = (name, cond, detail) => r.push([name, !!cond, detail]);
+  // ---- B1b. Regalo a los que votaron a Goku (21-11-2026): lee su propio voto ----
+  try {
+    const c = { console }; c.window = c; c.G = {}; vm.createContext(c); vm.runInContext(rd('js/core/mods.js'), c, { filename: 'js/core/mods.js' });
+    const EN = traductorIngles(), M = c.G.MODS, r = M.regaloVoto, antes = r.hasta - 3600e3, ts = ms => ({ toMillis: () => ms });
+    const corre = async (save, voto) => M.darRegaloVoto(save, async () => voto);
+    const s1 = { owned: { 4: {} }, tickets: { t1: 0, t10: 2 } }, a1 = await corre(s1, { p1: 'goku', p2: 'mario', at: ts(antes) }), a1b = await corre(s1, { p1: 'goku', p2: 'mario', at: ts(antes) });
+    const s2 = { owned: {} }, a2 = await corre(s2, { p1: 'mario', p2: 'goku', at: ts(antes) });
+    const s3 = { owned: { 10018: {} }, tickets: { t1: 0, t10: 2 } }, a3 = await corre(s3, { p1: 'goku', p2: 'sonic', at: ts(antes) });
+    const s4 = { owned: {} }, a4 = await corre(s4, { p1: 'mario', p2: 'sonic', at: ts(antes) });
+    const s5 = { owned: {} }, a5 = await corre(s5, { p1: 'goku', p2: 'sonic', at: ts(r.hasta + 1) });
+    const s6 = { owned: {} }, a6 = await corre(s6, null), a7 = await M.darRegaloVoto({ owned: {} });
+    t('regalo por voto: Goku (10018) a quien lo votó con 2 o con 1 punto, una vez, con su aviso',
+      r.dex === 10018 && r.opcion === 'goku' && a1 === r.texto && !!s1.owned[10018] && s1.regalos[r.id] > 0 && s1.tickets.t10 === 2 && a1b === null && a2 === r.texto && !!s2.owned[10018], { a1, a1b, a2, s1 });
+    t('regalo por voto: si ya tenía a Goku, un ticket ×10 y el otro aviso', a3 === r.textoYa && s3.tickets.t10 === 3 && s3.regalos[r.id] > 0, { a3, s3 });
+    t('regalo por voto: nada (ni se apunta) a quien no votó a Goku, votó después de `hasta`, no votó o no tiene nube',
+      a4 === null && a5 === null && a6 === null && a7 === null && !s4.owned[10018] && !s5.owned[10018] && !(s4.regalos || {})[r.id] && !(s6.regalos || {})[r.id], { a4, a5, a6, a7 });
+    t('regalo por voto: los avisos tienen su inglés', EN(r.texto) !== r.texto && EN(r.textoYa) !== r.textoYa);
+  } catch (e) { t('regalo por voto', false, String(e && e.stack || e)); }
   try {
     const c = { console, crypto: require('crypto').webcrypto, TextEncoder, TextDecoder }; c.window = c; c.G = {}; vm.createContext(c);
     for (const f of ['js/core/util.js', 'js/core/mods.js']) vm.runInContext(rd(f), c, { filename: f });

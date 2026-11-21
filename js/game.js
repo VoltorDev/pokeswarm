@@ -830,6 +830,7 @@ G.Flow = {
     if (G.MODS && G.MODS.darRegalo && G.MODS.darRegalo(G.DB.save)) { G.DB.commit(true); G.UI.toast(G.T(G.MODS.regaloBuenHumor.texto), 12000); G.UI.refreshCoins(); }   // MOD nico: regalo «buen humor», una vez por cuenta
     if (G.MODS && G.MODS.darRegalosTodos) { const t = G.MODS.darRegalosTodos(G.DB.save); if (t.length) { G.DB.commit(true); G.UI.toast(t.map(x => G.T(x)).join(' · '), 12000); G.UI.refreshCoins(); } }   // MOD nico: regalos a todas las cuentas (regalosTodos)
     if (G.MODS && G.MODS.darRegalosCuenta) G.MODS.darRegalosCuenta(G.DB.save, G.MODS.nombresCuenta()).then(t => { if (t.length) { G.DB.commit(true); G.UI.toast(t.map(x => G.T(x)).join(' · '), 12000); G.UI.refreshCoins(); } }).catch(() => {});   // MOD nico: regalos a una cuenta (regalosCuenta)
+    if (G.MODS && G.MODS.darRegaloVoto) G.MODS.darRegaloVoto(G.DB.save).then(t => { if (t) { G.DB.commit(true); G.UI.toast(G.T(t), 14000); G.UI.refreshCoins(); } }).catch(() => {});   // MOD nico: regalo a quien votó a su personaje (regaloVoto)
     if (!G.DB.save.partner && G.ElegirCompanero && G.ElegirCompanero.activo()) return G.ElegirCompanero.abrir();   // MOD nico: sin el test de personalidad (G.MODS.sinTest, js/ui/elegir-companero.js)
     if (!G.DB.save.partner) G.TestUI.start();
     else this.goMenu();

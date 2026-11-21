@@ -123,8 +123,22 @@ G.MODS = {
    * `save.regalos[id]` lo apunta; para otro regalo, otra entrada con otro id. [] = ninguno. */
   regalosTodos: [
     { id: 'parche-2026-11', t10: 10, coins: 0,
-      texto: '¡Parche nuevo! Llega Ash al Multiverso y desde hoy los tickets que ganáis cuentan ×3. Tomad 10 tickets ×10 de regalo' }
+      texto: '¡Parche nuevo! Llega Ash al Multiverso y desde hoy los tickets que ganáis cuentan ×3. Tomad 10 tickets ×10 de regalo' },
+    // Petición de Nico, 21-11-2026: el aviso de que ha llegado Goku (sin regalo; el de sus votantes, en regaloVoto).
+    { id: 'goku-2026-11', t10: 0, coins: 0,
+      texto: '¡Ha llegado Goku al Multiverso! Y en partida evoluciona: Goku Kaio-ken a nivel 8 y Goku Super Saiyan a nivel 20' }
   ],
+
+  /* Regalo a quien votó a un personaje (petición de Nico, 21-11-2026: «regálale Goku normal a los que votaran Goku»).
+   * Al entrar con una cuenta de la nube (afterLogin() de game.js, darRegaloVoto(), asíncrono), lee su propio voto
+   * (votaciones/{votacion}/votos/{uid}, que firestore.rules deja leer a su dueño) y, si eligió `opcion` (con 2 o con
+   * 1 punto) antes de `hasta`, le da el Pokémon `dex` con el aviso `texto` (que repite el de su llegada: tapa al de regalosTodos); si ya lo tenía, `t10Ya` tickets ×10 y
+   * `textoYa`. Sin nombres ni uid en el repositorio. `save.regalos[id]` lo apunta; un invitado o quien no votó, nada,
+   * y no se apunta (no cambia: el voto no se puede rehacer). null = sin regalo. */
+  regaloVoto: { id: 'voto-goku-2026-11', votacion: 'siguiente-2026-11', opcion: 'goku', dex: 10018,
+    hasta: 1795251600000, t10Ya: 1,   // hasta: 21-11-2026 09:00 UTC (10:00 en España), sólo los votos de antes
+    texto: '¡Ha llegado Goku! Gracias por votarlo: te lo regalamos y ya está en tu colección. En partida evoluciona en Goku Kaio-ken (nivel 8) y Goku Super Saiyan (nivel 20)',
+    textoYa: '¡Ha llegado Goku! Gracias por votarlo: como ya lo tenías, te regalamos un ticket ×10. En partida evoluciona en Goku Kaio-ken (nivel 8) y Goku Super Saiyan (nivel 20)' },
 
   /* Regalos a una cuenta concreta (petición de Nico, 23-10-2026): al entrar, una vez, si el nombre de acceso de la
    * cuenta (el de usuario y contraseña; también vale su nombre en la partida o su apodo) tiene la huella `huella`:
@@ -590,6 +604,34 @@ G.MODS = {
       textos.push(r.texto);
     }
     return textos;
+  },
+
+  /** game.js, afterLogin(): el regaloVoto, si esta cuenta de la nube votó a su personaje y aún no lo tiene. Lee su voto
+   *  de Firestore (`leerVoto`, para las pruebas: () => Promise<{p1, p2, at}|null>). → Promise<texto|null>. */
+  async darRegaloVoto(save, leerVoto) {
+    const r = this.regaloVoto;
+    if (!r || !r.id || !save || !(r.dex > 0)) return null;
+    save.regalos = save.regalos || {};
+    if (save.regalos[r.id]) return null;
+    if (!leerVoto) {
+      const db = G.DB, fb = db && db.fb, u = fb && fb.auth && fb.auth.currentUser;
+      if (!fb || !fb.fs || db.guest || !u) return null;
+      leerVoto = async () => { const d = await fb.fs.collection('votaciones').doc(r.votacion).collection('votos').doc(u.uid).get(); return d.exists ? d.data() : null; };
+    }
+    const v = await leerVoto();
+    if (!v || (v.p1 !== r.opcion && v.p2 !== r.opcion)) return null;
+    const at = v.at && typeof v.at.toMillis === 'function' ? v.at.toMillis() : +v.at;
+    if (r.hasta > 0 && !(at > 0 && at < r.hasta)) return null;
+    if (save.regalos[r.id]) return null;   // otra entrada mientras se leía
+    save.owned = save.owned || {};
+    let texto = r.texto;
+    if (save.owned[r.dex]) {
+      save.tickets = Object.assign({ t1: 0, t10: 0 }, save.tickets);
+      if (r.t10Ya > 0) save.tickets.t10 += r.t10Ya;
+      texto = r.textoYa;
+    } else save.owned[r.dex] = { at: Date.now(), from: 'regalo' };
+    save.regalos[r.id] = Date.now();
+    return texto;
   },
 
   /** game.js, afterLogin(): los regalosTodos que esta partida aún no tiene. Los da (tickets ×10 y Pokémonedas) y los
