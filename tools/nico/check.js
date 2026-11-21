@@ -5848,7 +5848,7 @@ function multiversoChecks() {
     t('G.DEX crece sólo con los del Multiverso y sin repetidos (cargar multiverso.js dos veces no duplica nada)', (() => {
       const n = G.DEX.length, m = G.Moves.ALL.length;
       vm.runInContext(rd('js/data/multiverso.js'), c, { filename: 'js/data/multiverso.js (otra vez)' });
-      return n === sin.DEX.length + lista.length && G.DEX.length === n && G.Moves.ALL.length === m && new Set(G.DEX.map(p => p.dex)).size === G.DEX.length;
+      return n === sin.DEX.length + lista.length + G.DEX.filter(p => p.formaDe).length && G.DEX.length === n && G.Moves.ALL.length === m && new Set(G.DEX.map(p => p.dex)).size === G.DEX.length;
     })());
     const malas = [];
     for (const p of lista) {
@@ -6068,9 +6068,9 @@ function multiversoChecks() {
     const cm = montar({ extra: ['js/systems/levelup.js', 'js/systems/evo-partida.js', 'js/systems/gacha.js'], cambia: { 'js/data/multiverso.js': conHojas } });
     const G = cm.G, M2 = G.MULTIVERSO, E = G.EvoPartida;
     sembrar(cm, 29);
-    t('con hojas: Goku en G.DEX (banner y colección); sus formas sólo en G.DEX_BY y G.SPRITE_META (ni en G.DEX ni en lista(): ni banner, ni colección, ni sus recuentos, ni enemigos, ni «Desbloquear todos»)',
-      !!geo && G.DEX.some(p => p.dex === 10018) && M2.lista().some(p => p.dex === 10018) && !G.DEX.some(p => p.formaDe) && !M2.lista().some(p => p.formaDe) &&
-      [10030, 10031].every(d => G.DEX_BY[d] && G.DEX_BY[d].formaDe && G.SPRITE_META[d]) && G.DEX.length === MVG.DEX.length + (yaHojas ? 0 : 1));
+    t('con hojas: Goku y sus formas en G.DEX como personajes (colección, compañero, «Desbloquear todos»; 21-11-2026), pero las formas no en lista() (el banner)',
+      !!geo && G.DEX.some(p => p.dex === 10018) && M2.lista().some(p => p.dex === 10018) && [10030, 10031].every(d => G.DEX.some(p => p.dex === d)) && !M2.lista().some(p => p.formaDe) &&
+      [10030, 10031].every(d => G.DEX_BY[d] && G.DEX_BY[d].formaDe && G.SPRITE_META[d]) && G.DEX.length === MVG.DEX.length + (yaHojas ? 0 : 3));
     t('con hojas: G.EVO 10018 -> [10030] y 10030 -> [10031], G.EVO_NIVEL 16 y 40 (en partida, ×0,5: niveles 8 y 20), sin tocar js/data/evolutions.js (generado)',
       JSON.stringify(G.EVO[10018]) === '[10030]' && JSON.stringify(G.EVO[10030]) === '[10031]' && !G.EVO[10031] && G.EVO_NIVEL[10030] === 16 && G.EVO_NIVEL[10031] === 40 &&
       E.nivelDe(10030) === 8 && E.nivelDe(10031) === 20 && !/10018|10030|10031/.test(rd('js/data/evolutions.js')));
@@ -6106,16 +6106,16 @@ function multiversoChecks() {
     const Ga = G.Gacha, save = { tickets: { t1: 0, t10: 10000 }, owned: {}, shiny: {}, coins: 0, stats: {}, pity: {} }, res = [];
     for (let i = 0; i < 1000; i++) res.push(...Ga.pull(save, 10, 10));
     const goku = res.filter(x => x.dex === 10018), repes = goku.filter(x => !x.isNew);
-    t(`10.000 tiradas del Multiverso con las hojas: ninguna forma (sale Goku ${goku.length} veces, ${repes.length} repetido); un Goku repetido no desbloquea sus formas y da sus Pokémonedas (300, 900 un shiny)`,
-      res.length === 10000 && !res.some(x => G.DEX_BY[x.dex].formaDe) && goku.length > 400 && repes.length > 300 &&
-      repes.every(x => !x.evo && x.refund === (x.shiny ? 900 : 300)) && !save.owned[10030] && !save.owned[10031] && !save.shiny[10030] && !save.shiny[10031],
-      { goku: goku.length, repes: repes.length, malos: repes.filter(x => x.evo || x.refund !== (x.shiny ? 900 : 300)).slice(0, 3) });
-    const evoR = [false, true].map(sh => G.MODS.evolucionDeRepetido({ owned: { 10018: { at: 1 }, 10030: { at: 1 } }, shiny: { 10018: { at: 1 } } }, sh ? 10018 : 10030, sh));
-    // Control: sin la exclusión de mods.js (evolucionDeRepetido), un Goku repetido sí daría Goku Kaio-ken.
-    const ctl = montar({ extra: ['js/systems/gacha.js'], cambia: { 'js/data/multiverso.js': conHojas, 'js/core/mods.js': s => s.replace(' && !G.DEX_BY[d].formaDe', '') } }).G;
-    const ctlEvo = ctl.MODS.evolucionDeRepetido({ owned: { 10018: { at: 1 } }, shiny: {} }, 10018, false);
-    t('evolucionDeRepetido(): ni un Goku repetido (normal o shiny) ni un Kaio-ken dan una forma; control sin la exclusión de mods.js: daría 10030 (la prueba sabe verlo)',
-      evoR.every(x => x === 0) && ctlEvo === 10030, { evoR, ctlEvo });
+    const evos = (sh) => repes.filter(x => !!x.shiny === sh && x.evo).map(x => x.evo).join();
+    t(`10.000 tiradas del Multiverso con las hojas: ninguna forma directa (sale Goku ${goku.length} veces, ${repes.length} repetido); el primer Goku repetido da Kaio-ken, el siguiente Super Saiyan (sin monedas) y el resto sus Pokémonedas (300, 900 un shiny)`,
+      res.length === 10000 && !res.some(x => G.DEX_BY[x.dex].formaDe) && goku.length > 400 && repes.length > 300 && evos(false) === '10030,10031' &&
+      repes.every(x => x.evo ? x.refund === 0 : x.refund === (x.shiny ? 900 : 300)) && save.owned[10030] && save.owned[10031],
+      { goku: goku.length, repes: repes.length, evos: [evos(false), evos(true)], malos: repes.filter(x => !x.evo && x.refund !== (x.shiny ? 900 : 300)).slice(0, 3) });
+    const ER = (owned, dex, sh, shiny = {}) => G.MODS.evolucionDeRepetido({ owned, shiny }, dex, sh);
+    const evoR = [ER({ 10018: 1 }, 10018, false), ER({ 10018: 1, 10030: 1 }, 10018, false), ER({ 10018: 1, 10030: 1 }, 10030, false),
+      ER({ 10018: 1, 10030: 1, 10031: 1 }, 10018, false), ER({ 10018: 1 }, 10018, true, { 10018: 1 }), ER({ 10018: 1, 10030: 1 }, 10018, true, { 10018: 1, 10030: 1 })];
+    t('evolucionDeRepetido(): un Goku repetido da Kaio-ken; con Kaio-ken ya, Super Saiyan (y un Kaio-ken repetido, también); con todo, nada; igual en shiny',
+      evoR.join() === '10030,10031,10031,0,10030,10031', evoR);
     // Sin js/data/evolutions.js (G.EVO), las formas se cargan pero no crean un G.EVO (todo como el proyecto base).
     const sinEvo = montar({ cambia: { 'js/data/multiverso.js': conHojas, 'js/data/evolutions.js': () => '' } }).G;
     t('sin js/data/evolutions.js: las formas no crean G.EVO (no se activa la evolución por repetido ni en partida)', !sinEvo.EVO && !!sinEvo.DEX_BY[10030]);
@@ -6193,7 +6193,7 @@ function multiversoChecks() {
     // lo deja en la colección (gacha.js de upstream). Con diez personajes pasa en ~14 % de las tandas.
     const nuevosEsperados = mvs.length + mvs.filter(d => !res.find(x => x.dex === d).shiny).length;
     t(`10.000 tiradas en el Multiverso: siempre uno suyo, a partes iguales (${cuantos.join(' / ')}); cada uno y su shiny, nuevos una vez (el normal no, si salió antes el shiny); el resto, 300 Pokémonedas (900 un shiny: multiversoRepetidoPorCoste, 30 por cada ticket que vale el ×10); shiny ${sh.toFixed(2)} % (1,2-1,8)`,
-      !fuera.length && nuevos === nuevosEsperados && res.every(x => x.isNew ? x.refund === 0 : x.refund === (x.shiny ? 900 : 300)) && sh >= 1.2 && sh <= 1.8 &&
+      !fuera.length && nuevos === nuevosEsperados && res.every(x => x.isNew || x.evo ? x.refund === 0 : x.refund === (x.shiny ? 900 : 300)) && sh >= 1.2 && sh <= 1.8 &&
       G.MODS.multiversoRepetidoPorCoste === true &&
       mvs.every(d => save.owned[d] && save.shiny[d]) && cuantos.every(k => Math.abs(k / res.length - 1 / mvs.length) < 0.02), { fuera: fuera.length, nuevos, nuevosEsperados, sh, cuantos });
     // El techo: una tirada ×1 de un banner normal en el que todo sale repetido vale de media 38,25 Pokémonedas (las rarezas
@@ -6207,7 +6207,7 @@ function multiversoChecks() {
     // premio(): sólo en su banner, sólo con el ajuste y según lo que cuesta la tirada.
     const M = G.MULTIVERSO, premios = { mv: M.premio(10, 30), mvSh: M.premio(10, 90), kanto: M.premio(1, 30), kantoSh: M.premio(1, 90) };
     // Con pull() real, partidas que ya los tienen todos (también en shiny) y 3 shiny forzados por tanda: todo es repetido.
-    const todosYa = () => Object.fromEntries(mvs.map(d => [d, { at: 1 }]));
+    const todosYa = () => Object.fromEntries(G.DEX.filter(p => p.mv).map(p => [p.dex, { at: 1 }]));   // también las formas (si no, un Goku repetido da su forma)
     const tanda = (t1, t10) => { Ga.debugForceShiny(3); return Ga.pull(Object.assign(sv(t1, t10), { owned: todosYa(), shiny: todosYa() }), 10, 10, 't1'); };
     const resumen = r => r && r.map(x => (x.shiny ? 's' : '') + x.refund).join(' ');
     G.MODS.multiversoTicketLila = false; premios.mvSinLila = M.premio(10, 30); premios.mvShSinLila = M.premio(10, 90);
@@ -6288,6 +6288,10 @@ function multiversoChecks() {
     const sinTener = el('nota').innerHTML;
     el('nota').innerHTML = 'x'; G.MULTIVERSO.ficha(4);
     const pokemon = el('nota').innerHTML;
+    el('nota').innerHTML = 'x'; G.MULTIVERSO.ficha(10030);
+    const forma = el('nota').innerHTML; el('nota').innerHTML = 'x';
+    t('ficha de una forma sin tenerla (Goku Kaio-ken, si tiene hojas): sale al repetir su forma anterior o evolucionando en la partida',
+      !G.DEX_BY[10030] || forma === 'Aún no lo tienes.<br>Sale al repetir su forma anterior en el banner del Multiverso, o evolucionando en la partida.', forma);
     G.DB.save.owned[10001] = { at: 1 }; G.MULTIVERSO.ficha(10001);
     t('ficha de la colección: sin tenerlo, «Sólo sale en el banner del Multiverso» (no «derrotándolo cuando salga shiny»); un Pokémon o uno que ya tienes, como upstream',
       sinTener === 'Aún no lo tienes.<br>Sólo sale en el banner del Multiverso, en el gacha.' && pokemon === 'x' && el('nota').innerHTML === 'x', { sinTener, pokemon });

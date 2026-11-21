@@ -43,7 +43,7 @@ G.Gacha = (() => {
   ];
   if (G.MULTIVERSO) BANNERS.push(G.MULTIVERSO.BANNER);   // MOD nico: banner «Multiverso» (js/data/multiverso.js)
 
-  function inBanner(p, gen) { return p.gen === gen && !!G.SPRITE_META[p.dex]; }
+  function inBanner(p, gen) { return p.gen === gen && !!G.SPRITE_META[p.dex] && !p.formaDe; }   // MOD nico: las formas del Multiverso (formaDe) no salen en el banner: se consiguen con un repetido de la anterior
 
   /** Pokémon de una rareza en un banner. */
   function pool(rarity, gen) { return G.DEX.filter(p => inBanner(p, gen) && p.rarity === rarity); }

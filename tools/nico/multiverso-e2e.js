@@ -90,7 +90,8 @@ async function caso(browser, v, estilo, partidas) {
   await page.evaluate(() => document.querySelector('#scr-menu [data-go=dex]').click());
   await page.locator('#scr-dex').waitFor({ state: 'visible' });
   const tabDex = page.locator('#dex-gens .gen-tab', { hasText: 'Multiverso' });
-  t(`${tag}: la colección tiene la pestaña «Multiverso» (0/${PJS.length})`, await tabDex.count() === 1 && (await tabDex.textContent()).includes('0/' + PJS.length), await page.locator('#dex-gens').textContent());
+  const enColeccion = PJS.length + await page.evaluate(() => G.DEX.filter(p => p.formaDe).length);   // y las formas de Goku (21-11-2026)
+  t(`${tag}: la colección tiene la pestaña «Multiverso» (0/${enColeccion})`, await tabDex.count() === 1 && (await tabDex.textContent()).includes('0/' + enColeccion), await page.locator('#dex-gens').textContent());
   await tabDex.click();
   await page.locator('#dex-grid .cell').first().click();
   await sleep(200);
@@ -129,10 +130,10 @@ async function caso(browser, v, estilo, partidas) {
   await page.evaluate(() => { const o = G.Gacha.pull; G.Gacha.pull = (...x) => { const r = o(...x); window.__ult = r; return r; }; });
   const antes = await page.evaluate(() => G.DB.save.coins);
   const c10 = await tirar(page, '#pull-10', `${tag}-5-tirada10`);
-  const r10 = await page.evaluate(() => ({ coins: G.DB.save.coins, res: (window.__ult || []).map(x => ({ dex: x.dex, mv: !!G.DEX_BY[x.dex].mv, shiny: x.shiny, isNew: x.isNew, refund: x.refund })) }));
+  const r10 = await page.evaluate(() => ({ coins: G.DB.save.coins, res: (window.__ult || []).map(x => ({ dex: x.dex, mv: !!G.DEX_BY[x.dex].mv, shiny: x.shiny, isNew: x.isNew, refund: x.refund, evo: x.evo || 0 })) }));
   const pagado = r10.res.reduce((sum, x) => sum + x.refund, 0);
-  t(`${tag}: la ×10 son 10 del Multiverso; los nuevos (también un shiny nuevo) no pagan y cada repetido da 300 Pokémonedas (900 un shiny), lo que suben las monedas`,
-    r10.res.length === 10 && r10.res.every(x => x.mv && (x.isNew ? x.refund === 0 : x.refund === (x.shiny ? 900 : 300))) && r10.coins - antes === pagado, { r10, antes, c10 });
+  t(`${tag}: la ×10 son 10 del Multiverso; los nuevos (también un shiny nuevo) y los que dan su forma (un Goku repetido) no pagan y cada repetido da 300 Pokémonedas (900 un shiny), lo que suben las monedas`,
+    r10.res.length === 10 && r10.res.every(x => x.mv && (x.isNew || x.evo ? x.refund === 0 : x.refund === (x.shiny ? 900 : 300))) && r10.coins - antes === pagado, { r10, antes, c10 });
   const gastado = await page.evaluate(() => G.DB.save.tickets);
   // Los normales no bajan (pueden subir: los logros de las primeras tiradas dan tickets).
   t(`${tag}: las 12 tiradas del Multiverso gastan 12 tickets ×10 y ningún ticket normal`, gastado.t10 === 3 && gastado.t1 >= 60, gastado);

@@ -679,18 +679,20 @@ G.MULTIVERSO = (() => {
   // </meta montar.py>
 
   // Formas (MOD nico, 20-11-2026, Goku): una entrada con `formaDe` (el número de la forma de la que sale) y `nivel` (el
-  // real, como G.EVO_NIVEL) es una evolución de especie que sólo se alcanza dentro de la partida (js/systems/evo-partida.js).
-  // Va en G.DEX_BY y G.SPRITE_META (la evolución en partida, el sprite, el cooperativo y el ranking la encuentran) pero NO
-  // en G.DEX: así no sale en ningún banner (gacha.js sólo mira G.DEX), ni en la colección ni en sus recuentos (no se puede
-  // tener), ni de enemigo, jefe o Pokémon perdido, ni en «Desbloquear todos». Se engancha a G.EVO / G.EVO_NIVEL desde aquí
-  // porque js/data/evolutions.js es generado; sólo si su forma anterior también está cargada (sin hojas, nada). Un repetido
-  // del gacha no la desbloquea (G.MODS.evolucionDeRepetido). Comparte el `pool` de su forma base.
+  // real, como G.EVO_NIVEL) es una evolución de especie, como las de los Pokémon (petición de Nico, 21-11-2026: «ponlos
+  // como personajes, igual que las evoluciones de los pokemon»): va en G.DEX como cualquier personaje (colección,
+  // compañero, «Desbloquear todos») y un repetido de su forma anterior la desbloquea (G.MODS.evolucionDeRepetido), como
+  // Charmeleon con un Charmander repetido; en la partida se evoluciona a ella (js/systems/evo-partida.js). No sale en el
+  // banner (inBanner de gacha.js y lista(), aquí): el Multiverso reparte a partes iguales entre los de rareza 2, y la
+  // forma final supera a Mewtwo. Nunca de enemigo (mv).
+  // Se engancha a G.EVO / G.EVO_NIVEL desde aquí porque js/data/evolutions.js es generado; sólo si su forma anterior también
+  // está cargada (sin hojas, nada). Comparte el `pool` de su forma base.
   for (const p of PERSONAJES) {
     if (G.DEX_BY[p.dex] || !META[p.dex]) continue;
     if (p.formaDe && !G.DEX_BY[p.formaDe]) continue;
     if (!G.SPRITE_META[p.dex]) G.SPRITE_META[p.dex] = META[p.dex];
     const mon = Object.assign({}, p);
-    if (!p.formaDe) G.DEX.push(mon);
+    G.DEX.push(mon);
     G.DEX_BY[mon.dex] = mon;
     if (p.formaDe && G.EVO) {
       const hijos = G.EVO[p.formaDe] || (G.EVO[p.formaDe] = []);
@@ -726,7 +728,7 @@ G.MULTIVERSO = (() => {
   }
 
   const $ = id => document.getElementById(id);
-  const lista = () => G.DEX.filter(p => p.mv && G.SPRITE_META[p.dex]);
+  const lista = () => G.DEX.filter(p => p.mv && G.SPRITE_META[p.dex] && !p.formaDe);   // los del banner (las formas, no)
 
   /**
    * El cartel del banner (gancho en refresh() de gacha-ui.js, al final, tras las
@@ -788,7 +790,8 @@ G.MULTIVERSO = (() => {
     if (!p || !p.mv || !s) return;
     if (s.owned[dex]) return notaFormas(dex);
     const nota = document.querySelector('#dex-detail p.center');
-    if (nota) nota.innerHTML = 'Aún no lo tienes.<br>Sólo sale en el banner del Multiverso, en el gacha.';
+    if (nota) nota.innerHTML = p.formaDe ? 'Aún no lo tienes.<br>Sale al repetir su forma anterior en el banner del Multiverso, o evolucionando en la partida.'   // una forma (21-11-2026)
+      : 'Aún no lo tienes.<br>Sólo sale en el banner del Multiverso, en el gacha.';
   }
 
   /** Las formas cargadas que salen de `dex` dentro de la partida, en orden (Goku -> Kaio-ken -> Super Saiyan). */
@@ -798,8 +801,7 @@ G.MULTIVERSO = (() => {
     return out;
   }
 
-  /** MOD nico (20-11-2026): las formas no están en la colección (no se pueden tener); la ficha de quien las tiene lo dice
-   *  bajo sus ataques, con el nivel de la partida al que sale cada carta. Textos en español: i18n.js los traduce en el DOM. */
+  /** MOD nico (20-11-2026): la ficha de quien tiene a uno con formas (Goku, Kaio-ken) lo dice bajo sus ataques, con el nivel de la partida al que sale cada carta. Textos en español: i18n.js los traduce en el DOM. */
   function notaFormas(dex) {
     const f = G.MODS && G.MODS.evoEnPartida && G.EvoPartida ? formasDe(dex) : [];
     const ref = f.length && document.querySelector('#dex-detail .move-icons');

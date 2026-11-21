@@ -761,17 +761,23 @@ G.MODS = {
   /** gacha.js, pull(): `dex` ha salido repetido (`shiny`: ya tenías ese shiny). Si le queda una
    *  evolución por desbloquear, la apunta en `save` (from 'evo') y devuelve su dex; si no, 0 (y
    *  pull() da las monedas del original). Con varias ramas, una de las que faltan al azar. Las formas del Multiverso
-   *  (`formaDe`, Goku Kaio-ken y Super Saiyan; 20-11-2026) sólo se alcanzan evolucionando en la partida: un Goku
-   *  repetido no las desbloquea y da sus Pokémonedas. */
+   *  (`formaDe`) cuentan como evoluciones (21-11-2026), pero no salen en el banner: si ya tienes la siguiente, el
+   *  repetido da la de después (un Goku repetido da Goku Kaio-ken y, el siguiente, Goku Super Saiyan). */
   evolucionDeRepetido(save, dex, shiny) {
     if (!this.repetidoDaEvolucion || !G.EVO || !save || !save.owned) return 0;
     const hijos = G.EVO[dex];
     if (!Array.isArray(hijos)) return 0;
     const meta = G.SPRITE_META || {};
-    const enJuego = d => !!(G.DEX_BY && G.DEX_BY[d] && meta[d] && !G.DEX_BY[d].formaDe);
+    const enJuego = d => !!(G.DEX_BY && G.DEX_BY[d] && meta[d]);
     const conShiny = d => (G.Sprites && G.Sprites.hasShiny ? G.Sprites.hasShiny(d) : !!meta[d].sh);
     save.shiny = save.shiny || {};
-    const faltan = hijos.filter(d => enJuego(d) && (shiny ? conShiny(d) && !save.shiny[d] : !save.owned[d]));
+    const falta = d => enJuego(d) && (shiny ? conShiny(d) && !save.shiny[d] : !save.owned[d]);
+    let faltan = hijos.filter(falta);
+    const forma = d => !!(G.DEX_BY && G.DEX_BY[d] && G.DEX_BY[d].formaDe);
+    for (let nivel = hijos; !faltan.length && nivel.length && nivel.every(forma);) {   // formas: la de después
+      nivel = [].concat(...nivel.map(d => G.EVO[d] || []));
+      faltan = nivel.filter(falta);
+    }
     if (!faltan.length) return 0;
     const d = faltan.length === 1 ? faltan[0] : faltan[Math.min(faltan.length - 1, Math.floor(Math.random() * faltan.length))];
     const at = Date.now();

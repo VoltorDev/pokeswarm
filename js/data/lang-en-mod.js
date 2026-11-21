@@ -163,6 +163,7 @@ G.I18n.add({
   '· Un repetido da {x} Pokémonedas (un shiny repetido, el triple).': '· A duplicate gives {x} PokéCoins (a shiny duplicate, triple).',
   '· Nunca salen de enemigos: sólo se consiguen aquí.': '· They never show up as enemies: you can only get them here.',
   'Sólo sale en el banner del Multiverso, en el gacha.': 'Only in the Multiverse banner of the gacha.',
+  'Sale al repetir su forma anterior en el banner del Multiverso, o evolucionando en la partida.': 'You get it by pulling its previous form again in the Multiverse banner, or by evolving during a run.',
   // Mapas propios (js/world/mapas-datos.js: los mismos que G.MapasDatos.NOMBRES_EN): los 3 biomas y las 18 arenas de la
   // grieta. «Grieta · {x}», «— {x} —» y las mayúsculas del HUD clásico salen de estas claves (i18n.js).
   'Vega del Alba': 'Dawn Vale', 'Vega Helada': 'Frozen Vale', 'Vega Sulfúrea': 'Sulfur Vale',
